@@ -32,4 +32,4 @@ Step-by-step guide to adding a new government API. Create 2 files, add 2 lines o
 
 ---
 
-[← Back to Home](/)
+[← Back to Home](../)
