@@ -1,6 +1,6 @@
 # US Government Open Data MCP
 
-An MCP server + TypeScript SDK for **38 U.S. government and international data APIs** — 206 tools covering economic, fiscal, health, education, energy, environment, lobbying, housing, patents, safety, banking, consumer protection, workplace safety, transportation, seismic, clinical trials, pharma payments, research funding, and legislative data.
+An MCP server + TypeScript SDK for **38 U.S. government and international data APIs** — 208 tools covering economic, fiscal, health, education, energy, environment, lobbying, housing, patents, safety, banking, consumer protection, workplace safety, transportation, seismic, clinical trials, pharma payments, research funding, and legislative data.
 
 Works with any MCP client (VS Code Copilot, Claude Desktop, Cursor) via **stdio or HTTP Stream**. Supports **selective module loading** and standalone **SDK imports** for use without MCP.
 
@@ -42,7 +42,7 @@ I did collapse all older commits into a single commit hence the large initial co
 | **CMS Provider Data** | Hospital quality ratings, nursing home inspections, home health, hospice, dialysis facility data | None |
 | **HUD** | Fair Market Rents by bedroom count, income limits by household size, county/metro area housing data | `HUD_USER_TOKEN` |
 | **USPTO PatentsView** | U.S. patent search by keyword, assignee, inventor, CPC class; inventor and assignee lookup | None |
-| **CFPB** | Consumer complaint database: 13M+ complaints against financial companies, searchable by company/product/state/issue with trend analysis | None |
+| **CFPB** | Consumer complaint database: 13M+ complaints against financial companies. Search by company/product/state/issue/ZIP, trend analysis with lens breakdowns, state-by-state geographic view, complaint detail by ID | None |
 | **FDIC** | Bank data: 5,000+ insured institutions, failures since 1934, quarterly financials, branch deposits, merger history | None |
 | **DOL** | OSHA inspections/violations/accidents, WHD wage theft enforcement, weekly unemployment insurance claims (national + state) | `DOL_API_KEY` |
 | **Open Payments** | CMS Sunshine Act data: 15M+ payments/year from pharma/device companies to doctors. Search by company, doctor, state, specialty | None |

@@ -133,15 +133,24 @@ export async function searchComplaints(opts: {
   issue?: string;
   date_received_min?: string;
   date_received_max?: string;
+  company_received_min?: string;
+  company_received_max?: string;
   company_response?: string;
+  company_public_response?: string;
+  consumer_consent_provided?: string;
   consumer_disputed?: string;
   has_narrative?: boolean;
+  submitted_via?: string;
+  timely?: string;
   tags?: string;
+  zip_code?: string;
   size?: number;
   frm?: number;
   sort?: string;
   field?: string;
   no_aggs?: boolean;
+  no_highlight?: boolean;
+  search_after?: string;
 }): Promise<ComplaintSearchResult> {
   const params: Record<string, string | number | undefined> = {};
 
@@ -152,15 +161,24 @@ export async function searchComplaints(opts: {
   if (opts.issue) params.issue = opts.issue;
   if (opts.date_received_min) params.date_received_min = opts.date_received_min;
   if (opts.date_received_max) params.date_received_max = opts.date_received_max;
+  if (opts.company_received_min) params.company_received_min = opts.company_received_min;
+  if (opts.company_received_max) params.company_received_max = opts.company_received_max;
   if (opts.company_response) params.company_response = opts.company_response;
+  if (opts.company_public_response) params.company_public_response = opts.company_public_response;
+  if (opts.consumer_consent_provided) params.consumer_consent_provided = opts.consumer_consent_provided;
   if (opts.consumer_disputed) params.consumer_disputed = opts.consumer_disputed;
   if (opts.has_narrative !== undefined) params.has_narrative = opts.has_narrative ? "true" : "false";
+  if (opts.submitted_via) params.submitted_via = opts.submitted_via;
+  if (opts.timely) params.timely = opts.timely;
   if (opts.tags) params.tags = opts.tags;
+  if (opts.zip_code) params.zip_code = opts.zip_code;
   if (opts.size !== undefined) params.size = opts.size;
   if (opts.frm !== undefined) params.frm = opts.frm;
   if (opts.sort) params.sort = opts.sort;
   if (opts.field) params.field = opts.field;
   if (opts.no_aggs) params.no_aggs = "true";
+  if (opts.no_highlight) params.no_highlight = "true";
+  if (opts.search_after) params.search_after = opts.search_after;
 
   const result = await client.get<ComplaintSearchResult>("/", params);
 
@@ -198,6 +216,9 @@ export async function getComplaintAggregations(opts: {
   date_received_min?: string;
   date_received_max?: string;
   tags?: string;
+  submitted_via?: string;
+  timely?: string;
+  zip_code?: string;
   size?: number;
 }): Promise<ComplaintSearchResult> {
   return searchComplaints({
@@ -209,34 +230,93 @@ export async function getComplaintAggregations(opts: {
 }
 
 /**
- * Get complaint trends over time.
- * Returns complaint data with date-based aggregations for trend analysis.
+ * Get complaint trends over time using the dedicated /trends endpoint.
  *
  * Example:
- *   const trends = await getComplaintTrends({ product: "Mortgage", date_received_min: "2020-01-01" });
+ *   const trends = await getComplaintTrends({ lens: "overview", date_received_min: "2020-01-01" });
+ *   const byProduct = await getComplaintTrends({ lens: "product", company: "Wells Fargo" });
  */
 export async function getComplaintTrends(opts: {
+  lens?: string;
+  sub_lens?: string;
+  sub_lens_depth?: number;
+  focus?: string;
+  search_term?: string;
   product?: string;
   company?: string;
   state?: string;
   issue?: string;
   date_received_min?: string;
   date_received_max?: string;
+  tags?: string;
+  submitted_via?: string;
+  timely?: string;
+  zip_code?: string;
   trend_interval?: string;
-}): Promise<ComplaintSearchResult> {
-  const params: Record<string, string | number | undefined> = {
-    size: 0,
-    trend_interval: opts.trend_interval ?? "month",
-  };
+}): Promise<unknown> {
+  const params: Record<string, string | number | undefined> = {};
 
+  params.lens = opts.lens ?? "overview";
+  if (opts.sub_lens) params.sub_lens = opts.sub_lens;
+  if (opts.sub_lens_depth) params.sub_lens_depth = opts.sub_lens_depth;
+  if (opts.focus) params.focus = opts.focus;
+  if (opts.search_term) params.search_term = opts.search_term;
   if (opts.product) params.product = opts.product;
   if (opts.company) params.company = opts.company;
   if (opts.state) params.state = opts.state;
   if (opts.issue) params.issue = opts.issue;
   if (opts.date_received_min) params.date_received_min = opts.date_received_min;
   if (opts.date_received_max) params.date_received_max = opts.date_received_max;
+  if (opts.tags) params.tags = opts.tags;
+  if (opts.submitted_via) params.submitted_via = opts.submitted_via;
+  if (opts.timely) params.timely = opts.timely;
+  if (opts.zip_code) params.zip_code = opts.zip_code;
+  if (opts.trend_interval) params.trend_interval = opts.trend_interval;
 
-  return client.get<ComplaintSearchResult>("/", params);
+  return client.get<unknown>("/trends", params);
+}
+
+/**
+ * Get a specific complaint by its ID.
+ *
+ * Example:
+ *   const complaint = await getComplaintById(1234567);
+ */
+export async function getComplaintById(complaintId: number): Promise<unknown> {
+  return client.get<unknown>(`/${complaintId}`);
+}
+
+/**
+ * Get complaint information broken down by state (geographic view).
+ * Useful for building maps or comparing complaint rates across states.
+ *
+ * Example:
+ *   const states = await getStateComplaints({ product: "Mortgage" });
+ */
+export async function getStateComplaints(opts?: {
+  search_term?: string;
+  product?: string;
+  company?: string;
+  issue?: string;
+  date_received_min?: string;
+  date_received_max?: string;
+  tags?: string;
+  submitted_via?: string;
+  timely?: string;
+}): Promise<unknown> {
+  const params: Record<string, string | number | undefined> = {};
+
+  if (opts?.search_term) params.search_term = opts.search_term;
+  if (opts?.product) params.product = opts.product;
+  if (opts?.company) params.company = opts.company;
+  if (opts?.issue) params.issue = opts.issue;
+  if (opts?.date_received_min) params.date_received_min = opts.date_received_min;
+  if (opts?.date_received_max) params.date_received_max = opts.date_received_max;
+  if (opts?.tags) params.tags = opts.tags;
+  if (opts?.submitted_via) params.submitted_via = opts.submitted_via;
+  if (opts?.timely) params.timely = opts.timely;
+
+  return client.get<unknown>("/geo/states", params);
 }
 
 /**
@@ -247,6 +327,19 @@ export async function getComplaintTrends(opts: {
  */
 export async function suggestCompany(text: string, size?: number): Promise<SuggestResult> {
   return client.get<SuggestResult>("/_suggest_company", {
+    text,
+    size: size ?? 10,
+  });
+}
+
+/**
+ * Get general search suggestions/autocomplete.
+ *
+ * Example:
+ *   const suggestions = await suggestSearch("mortgage fraud");
+ */
+export async function suggestSearch(text: string, size?: number): Promise<SuggestResult> {
+  return client.get<SuggestResult>("/_suggest", {
     text,
     size: size ?? 10,
   });

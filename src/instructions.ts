@@ -58,6 +58,7 @@ STATE-LEVEL QUESTIONS:
   Enrich: NOAA (noaa_climate_data) → climate/weather patterns affecting the state
   Enrich: HUD (hud_fair_market_rents) → rental costs and housing affordability
   Enrich: FEMA (fema_disaster_declarations) → disaster history and federal aid
+  Enrich: CFPB (cfpb_state_complaints) → geographic complaint breakdown by state
   Enrich: CFPB (cfpb_complaint_aggregations state) → financial complaint volume in state
   Enrich: FDIC (fdic_search_institutions) → banking institutions in the state
   Enrich: DOL (dol_osha_inspections, dol_whd_enforcement) → workplace safety and wage enforcement in state
@@ -380,7 +381,8 @@ BANKING / FINANCIAL REGULATION:
   Primary: FDIC (fdic_financials) → quarterly Call Report data (assets, deposits, income, ROA, ROE)
   Enrich: CFPB (cfpb_search_complaints) → consumer complaints against financial companies
   Enrich: CFPB (cfpb_complaint_aggregations) → complaint volume by company/product/state
-  Enrich: CFPB (cfpb_complaint_trends) → complaint trends over time for companies/products
+  Enrich: CFPB (cfpb_complaint_trends with lens='product') → complaint trends by product over time
+  Enrich: CFPB (cfpb_state_complaints) → geographic complaint distribution for banks
   Enrich: FDIC (fdic_deposits) → branch-level deposit data for market share analysis
   Enrich: FDIC (fdic_history) → mergers, acquisitions, charter changes
   Enrich: SEC (sec_company_search, sec_company_financials) → publicly traded bank financials
@@ -394,8 +396,12 @@ BANKING / FINANCIAL REGULATION:
 CONSUMER PROTECTION / FINANCIAL COMPLAINTS:
   Primary: CFPB (cfpb_search_complaints) → individual complaints with narratives and company responses
   Primary: CFPB (cfpb_complaint_aggregations) → complaint counts by company, product, state, issue
-  Primary: CFPB (cfpb_complaint_trends) → complaint volume trends over time
+  Primary: CFPB (cfpb_complaint_trends) → complaint volume trends with lens (overview/product/issue/tags) and sub_lens drill-down
+  Primary: CFPB (cfpb_state_complaints) → geographic state-by-state complaint breakdown for maps
+  Enrich: CFPB (cfpb_complaint_detail) → full details for a specific complaint by ID
   Enrich: CFPB (cfpb_suggest_company) → find exact company name for complaint searches
+  Enrich: CFPB (cfpb_search_complaints with submitted_via filter) → filter by how complaint was filed (Web, Phone, Postal mail)
+  Enrich: CFPB (cfpb_search_complaints with timely filter) → check if companies respond on time
   Enrich: FDIC (fdic_search_institutions) → bank details for complained-about institutions
   Enrich: SEC (sec_company_search) → financial data for complained-about companies
   Enrich: FEC (fec_search_candidates) → political donations by financial company executives
@@ -430,11 +436,13 @@ UNEMPLOYMENT / LABOR MARKET:
   Context: Federal Register (executive orders) → executive actions affecting employment
 
 DEREGULATION IMPACT:
-  Primary: CFPB (cfpb_complaint_trends) → did complaints rise/fall after regulatory changes?
+  Primary: CFPB (cfpb_complaint_trends with lens='overview') → did complaints rise/fall after regulatory changes?
+  Primary: CFPB (cfpb_complaint_trends with lens='product') → which product categories saw complaint changes?
   Primary: DOL (dol_osha_inspections) → did inspection frequency change after deregulation?
   Primary: FDIC (fdic_failures) → did bank failure rate change?
   Enrich: DOL (dol_osha_violations, dol_osha_accidents) → violation/accident trends after policy changes
   Enrich: CFPB (cfpb_complaint_aggregations by company) → which companies saw complaint changes
+  Enrich: CFPB (cfpb_state_complaints) → geographic shifts in complaint patterns after deregulation
   Enrich: DOL (dol_whd_enforcement) → wage theft enforcement trends
   Enrich: EPA (epa_facilities, epa_air_quality) → environmental compliance after deregulation
   Enrich: Federal Register (fr_executive_orders, fr_search_rules) → what was deregulated and when
