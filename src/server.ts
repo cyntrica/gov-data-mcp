@@ -60,6 +60,7 @@ import * as usgs from "./modules/usgs.js";
 import * as clinicalTrials from "./modules/clinical-trials.js";
 import * as bts from "./modules/bts.js";
 import * as openPayments from "./modules/open-payments.js";
+import * as nih from "./modules/nih.js";
 import { CROSS_REFERENCE_GUIDE } from "./instructions.js";
 import { analysisPrompts } from "./prompts.js";
 
@@ -104,7 +105,7 @@ const MODULES: Module[] = [
   fema, nhtsa, cms, hud, uspto,
   cfpb, fdic, dol,
   usgs, clinicalTrials, bts,
-  openPayments,
+  openPayments, nih,
 ];
 
 // ─── CLI arg + env parsing ───────────────────────────────────────────

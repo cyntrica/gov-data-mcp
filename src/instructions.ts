@@ -119,6 +119,9 @@ HEALTH / HEALTHCARE:
   Primary: CDC (cdc_weekly_deaths) → most current weekly death surveillance (COVID, flu, pneumonia, total)
   Enrich: ClinicalTrials (clinical_trials_search) → ongoing research for diseases/conditions
   Enrich: ClinicalTrials (clinical_trials_stats) → drug development pipeline activity by disease
+  Enrich: NIH RePORTER (nih_search_projects) → NIH-funded research grants for the condition
+  Enrich: NIH RePORTER (nih_spending_by_category) → NIH spending trends on the disease over time
+  Enrich: NIH RePORTER (nih_projects_by_agency) → which NIH institutes fund research for this area
   Enrich: USAspending (HHS spending) → how much is spent on healthcare
   Enrich: BLS (bls_cpi_breakdown medical care) → healthcare cost inflation
   Enrich: CDC (cdc_places_health) → county-level: obesity, diabetes, depression, smoking, food insecurity
@@ -154,6 +157,8 @@ HEALTH / HEALTHCARE:
   Context: World Bank (SH.XPD.CHEX.PC.CD) → international drug pricing context
   Always: Compare industry-sponsored vs NIH-sponsored trial counts for the same condition
   Always: Use clinical_trials_stats with search_as_drug=true for drug names like 'semaglutide'
+  Enrich: NIH RePORTER (nih_search_projects) → NIH-funded grants studying the drug or condition
+  Enrich: NIH RePORTER (nih_spending_by_category) → total NIH investment in the disease area
   Enrich: Open Payments (open_payments_search) → how much the drug's manufacturer pays doctors — shows the promotion chain
   Enrich: Open Payments (open_payments_research) → research funding from the manufacturer to doctors studying the drug
   Enrich: Open Payments (open_payments_ownership) → doctors with ownership stakes in the manufacturer
@@ -236,6 +241,8 @@ PHARMA PAYMENTS TO DOCTORS (SUNSHINE ACT):
   Context: World Bank (SH.XPD.CHEX.PC.CD) → U.S. vs international health spending
   Always: Cross-reference company payments to doctors with FDA adverse events for the same company's drugs
   Always: Compare company lobbying spend to their doctor payment spend — shows the full influence chain
+  Enrich: NIH RePORTER (nih_search_projects) → NIH grants to doctors/institutions that also receive pharma payments (Open Payments)
+  Always: Compare NIH research funding to a disease vs pharma payments to doctors in that specialty
 
 ENERGY / CLIMATE:
   Primary: EIA (petroleum, electricity, natural gas prices and production)
@@ -262,6 +269,7 @@ EDUCATION / LITERACY:
   Enrich: World Bank (SE.XPD.TOTL.GD.ZS) → U.S. education spending vs peers
   Enrich: World Bank (SE.TER.CUAT.BA.ZS) → degree attainment rates over time
   Context: USAspending (Dept of Education spending) → federal education funding
+  Enrich: NIH RePORTER (nih_search_projects) → NIH-funded education and child development research
 
 COLLEGE / HIGHER EDUCATION:
   Primary: College Scorecard (scorecard_search) → tuition, graduation rates, earnings, debt by school
@@ -272,6 +280,7 @@ COLLEGE / HIGHER EDUCATION:
   Enrich: Census (B15003 educational attainment) → degree attainment rates
   Enrich: World Bank (SE.TER.CUAT.BA.ZS) → international degree comparison
   Context: NAEP (naep_scores, naep_achievement_levels) → K-12 pipeline quality feeding into college
+  Enrich: NIH RePORTER (nih_search_projects) → NIH-funded research at universities (shows research mission alongside teaching)
 
 DISASTERS / EMERGENCY MANAGEMENT:
   Primary: FEMA (fema_disaster_declarations) → declared disasters by type, state, year

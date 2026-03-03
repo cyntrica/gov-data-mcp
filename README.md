@@ -1,6 +1,6 @@
 # US Government Open Data MCP
 
-An MCP server + TypeScript SDK for **37 U.S. government and international data APIs** — 198 tools covering economic, fiscal, health, education, energy, environment, lobbying, housing, patents, safety, banking, consumer protection, workplace safety, transportation, seismic, clinical trials, pharma payments, and legislative data.
+An MCP server + TypeScript SDK for **38 U.S. government and international data APIs** — 202 tools covering economic, fiscal, health, education, energy, environment, lobbying, housing, patents, safety, banking, consumer protection, workplace safety, transportation, seismic, clinical trials, pharma payments, research funding, and legislative data.
 
 Works with any MCP client (VS Code Copilot, Claude Desktop, Cursor) via **stdio or HTTP Stream**. Supports **selective module loading** and standalone **SDK imports** for use without MCP.
 
@@ -49,6 +49,7 @@ I did collapse all older commits into a single commit hence the large initial co
 | **USGS** | Earthquake events (magnitude, location, depth, tsunami risk), water resources monitoring (real-time and daily historical streamflow, water levels) from 13,000+ stations | None |
 | **ClinicalTrials.gov** | 400K+ clinical trials: search by condition, drug, sponsor, phase, status, location. Track pharma drug pipelines | None |
 | **BTS** | Bureau of Transportation Statistics: monthly transport stats (airline traffic, transit, rail, safety, fuel), border crossings at U.S. ports of entry | None |
+| **NIH RePORTER** | NIH-funded research projects: search by disease, investigator, institution, state, funding amount. Spending by disease category (RCDC), institute breakdown, linked publications | None |
 
 ## Quick Start
 
@@ -120,11 +121,11 @@ MODULES=fred,bls,treasury node dist/server.js
 node dist/server.js --modules fred,treasury --transport httpStream --port 8080
 ```
 
-Available module names: `treasury`, `fred`, `bls`, `bea`, `eia`, `census`, `fec`, `congress`, `federal-register`, `usaspending`, `sec`, `fbi`, `govinfo`, `noaa`, `usda-nass`, `world-bank`, `cdc`, `naep`, `college-scorecard`, `nrel`, `fda`, `epa`, `senate-lobbying`, `regulations`, `usda-fooddata`, `fema`, `nhtsa`, `cms`, `hud`, `uspto`, `cfpb`, `fdic`, `dol`, `usgs`, `clinical-trials`, `bts`, `open-payments`
+Available module names: `treasury`, `fred`, `bls`, `bea`, `eia`, `census`, `fec`, `congress`, `federal-register`, `usaspending`, `sec`, `fbi`, `govinfo`, `noaa`, `usda-nass`, `world-bank`, `cdc`, `naep`, `college-scorecard`, `nrel`, `fda`, `epa`, `senate-lobbying`, `regulations`, `usda-fooddata`, `fema`, `nhtsa`, `cms`, `hud`, `uspto`, `cfpb`, `fdic`, `dol`, `usgs`, `clinical-trials`, `bts`, `open-payments`, `nih`
 
 ## API Keys
 
-19 APIs require **no key at all** (Treasury, Federal Register, USAspending, World Bank, CDC, FDA, EPA, NAEP, Senate Lobbying, FEMA, NHTSA, CMS, USPTO, CFPB, FDIC, USGS, ClinicalTrials.gov, BTS, Open Payments). The rest need free keys — most take under a minute to get:
+20 APIs require **no key at all** (Treasury, Federal Register, USAspending, World Bank, CDC, FDA, EPA, NAEP, Senate Lobbying, FEMA, NHTSA, CMS, USPTO, CFPB, FDIC, USGS, ClinicalTrials.gov, BTS, Open Payments, NIH RePORTER). The rest need free keys — most take under a minute to get:
 
 | Key | Where to get it | Used by |
 |-----|----------------|---------|
