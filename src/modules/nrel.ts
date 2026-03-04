@@ -4,7 +4,8 @@
 
 import { z } from "zod";
 import type { Tool } from "fastmcp";
-import { searchAltFuelStations, getUtilityRates, getSolarResource, FUEL_TYPES } from "../sdk/nrel.js";
+import { keysEnum, describeEnum } from "../enum-utils.js";
+import { searchAltFuelStations, getUtilityRates, getSolarResource, FUEL_TYPES, STATUS_CODES } from "../sdk/nrel.js";
 
 export const name = "nrel";
 export const displayName = "NREL (Clean Energy)";
@@ -34,10 +35,10 @@ export const tools: Tool<any, any>[] = [
     parameters: z.object({
       state: z.string().optional().describe("Two-letter state code: 'CA', 'TX', 'NY'"),
       zip: z.string().optional().describe("ZIP code to search near"),
-      fuel_type: z.string().optional().describe("'ELEC' (EV charging), 'HY' (hydrogen), 'CNG', 'LPG', 'BD', 'E85'"),
+      fuel_type: z.enum(keysEnum(FUEL_TYPES)).optional().describe(`Fuel type: ${describeEnum(FUEL_TYPES)}`),
       radius: z.number().optional().describe("Search radius in miles from zip (default 25)"),
       limit: z.number().int().max(200).optional().describe("Max results (default 20)"),
-      status: z.string().optional().describe("'E' (open), 'P' (planned), 'T' (temp unavailable)"),
+      status: z.enum(keysEnum(STATUS_CODES)).optional().describe(`Station status: ${describeEnum(STATUS_CODES)}`),
     }),
     execute: async ({ state, zip, fuel_type, radius, limit, status }) => {
       const data = await searchAltFuelStations({ state, zip, fuel_type, limit, radius, status });

@@ -63,12 +63,12 @@ export const tools: Tool<any, any>[] = [
       date_received_min: z.string().optional().describe("Start date (YYYY-MM-DD): '2020-01-01'"),
       date_received_max: z.string().optional().describe("End date (YYYY-MM-DD): '2024-12-31'"),
       has_narrative: z.boolean().optional().describe("Only complaints with consumer narrative text (true/false)"),
-      submitted_via: z.string().optional().describe("Submission channel: 'Web', 'Referral', 'Phone', 'Postal mail', 'Fax', 'Email'"),
-      timely: z.string().optional().describe("Whether company responded timely: 'Yes', 'No'"),
+      submitted_via: z.enum(["Web", "Referral", "Phone", "Postal mail", "Fax", "Email"]).optional().describe("Submission channel"),
+      timely: z.enum(["Yes", "No"]).optional().describe("Whether company responded timely"),
       zip_code: z.string().optional().describe("Filter by ZIP code"),
-      tags: z.string().optional().describe("Filter by tags: 'Older American', 'Servicemember'"),
+      tags: z.enum(["Older American", "Servicemember"]).optional().describe("Tag filter"),
       size: z.number().int().max(100).optional().describe("Results per page (default 10, max 100)"),
-      sort: z.string().optional().describe("Sort: 'created_date_desc' (newest), 'created_date_asc', 'relevance_desc', 'relevance_asc'"),
+      sort: z.enum(["created_date_desc", "created_date_asc", "relevance_desc", "relevance_asc"]).optional().describe("Sort order"),
     }),
     execute: async (args) => {
       const data = await searchComplaints({ ...args, no_aggs: true });
@@ -92,7 +92,7 @@ export const tools: Tool<any, any>[] = [
       "Aggregation fields: 'product', 'company', 'state', 'issue', 'company_response', 'timely', 'submitted_via', 'tags'.",
     annotations: { title: "CFPB: Complaint Aggregations", readOnlyHint: true },
     parameters: z.object({
-      field: z.string().describe("Field to group by: 'product', 'company', 'state', 'issue', 'company_response', 'timely', 'tags'"),
+      field: z.enum(["product", "company", "state", "issue", "company_response", "timely", "submitted_via", "tags"]).describe("Field to group by"),
       product: z.string().optional().describe("Filter by product: 'Mortgage', 'Debt collection', etc."),
       company: z.string().optional().describe("Filter by company: 'Wells Fargo', 'Bank of America', etc."),
       state: z.string().optional().describe("Filter by state: 'CA', 'TX', 'NY'"),
@@ -123,8 +123,8 @@ export const tools: Tool<any, any>[] = [
       "Sub-lens allows drilling into sub-categories within the lens.",
     annotations: { title: "CFPB: Complaint Trends", readOnlyHint: true },
     parameters: z.object({
-      lens: z.string().optional().describe("Trend lens: 'overview' (default), 'product', 'issue', 'tags'"),
-      sub_lens: z.string().optional().describe("Sub-lens drill-down: 'issue', 'product', 'sub_product', 'sub_issue', 'tags'"),
+      lens: z.enum(["overview", "product", "issue", "tags"]).optional().describe("Trend lens (default: overview)"),
+      sub_lens: z.enum(["issue", "product", "sub_product", "sub_issue", "tags"]).optional().describe("Sub-lens drill-down"),
       sub_lens_depth: z.number().int().optional().describe("Top N sub-aggregations to return (default 10)"),
       focus: z.string().optional().describe("Focus charts on a specific product or company name"),
       product: z.string().optional().describe("Financial product: 'Mortgage', 'Debt collection', etc."),
@@ -168,7 +168,7 @@ export const tools: Tool<any, any>[] = [
       issue: z.string().optional().describe("Filter by issue type"),
       date_received_min: z.string().optional().describe("Start date (YYYY-MM-DD)"),
       date_received_max: z.string().optional().describe("End date (YYYY-MM-DD)"),
-      tags: z.string().optional().describe("Filter by tags: 'Older American', 'Servicemember'"),
+      tags: z.enum(["Older American", "Servicemember"]).optional().describe("Tag filter"),
     }),
     execute: async (args) => {
       const data = await getStateComplaints(args);

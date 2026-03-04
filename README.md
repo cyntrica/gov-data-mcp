@@ -1,6 +1,6 @@
 # US Government Open Data MCP
 
-An MCP server + TypeScript SDK for **39 U.S. government and international data APIs** — 212 tools covering economic, fiscal, health, education, energy, environment, lobbying, housing, patents, safety, banking, consumer protection, workplace safety, transportation, seismic, clinical trials, pharma payments, research funding, and legislative data.
+An MCP server + TypeScript SDK for **39 U.S. government and international data APIs** — 219 tools covering economic, fiscal, health, education, energy, environment, lobbying, housing, patents, safety, banking, consumer protection, workplace safety, transportation, seismic, clinical trials, pharma payments, research funding, and legislative data.
 
 Works with any MCP client (VS Code Copilot, Claude Desktop, Cursor) via **stdio or HTTP Stream**. Supports **selective module loading** and standalone **SDK imports** for use without MCP.
 
@@ -23,7 +23,7 @@ I did collapse all older commits into a single commit hence the large initial co
 | **Federal Register** | Executive orders, presidential documents, rules, agency notices, document detail, 470+ agency directory | None |
 | **USAspending** | Federal contracts, grants, loans — $6T+ annually by agency, recipient, state | None |
 | **SEC EDGAR** | Company filings, XBRL financials, full-text search | `SEC_CONTACT_EMAIL` |
-| **FBI Crime Data** | Crime statistics by state, national estimates, arrests | `DATA_GOV_API_KEY` |
+| **FBI Crime Data** | UCR crime stats, arrests, hate crimes, expanded homicide, law enforcement employees, use of force, LESDC | `DATA_GOV_API_KEY` |
 | **GovInfo** | Full text of bills, laws, CBO reports, Federal Register | `DATA_GOV_API_KEY` |
 | **NOAA Climate** | Weather observations, temperature, precipitation from U.S. stations | `NOAA_API_KEY` |
 | **USDA NASS** | Crop production, livestock, farm prices, Census of Agriculture | `USDA_NASS_API_KEY` |

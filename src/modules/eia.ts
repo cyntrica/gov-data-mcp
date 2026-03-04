@@ -70,7 +70,7 @@ export const tools: Tool<any, any>[] = [
         "Product type: 'crude' (default — WTI+Brent), 'gasoline', 'diesel', 'all'. " +
         "Or a specific series ID like 'EPCWTI'",
       ),
-      frequency: z.string().optional().describe("'daily', 'weekly', 'monthly' (default), 'annual'"),
+      frequency: z.enum(["daily", "weekly", "monthly", "annual"]).optional().describe("Frequency (default: monthly)"),
       start: z.string().optional().describe("Start date (YYYY-MM or YYYY-MM-DD). Default: 2 years ago"),
       end: z.string().optional().describe("End date. Default: latest available"),
       length: z.number().int().optional().describe("Max rows to return (default: 60)"),
@@ -102,9 +102,9 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "EIA: Electricity Prices & Generation", readOnlyHint: true },
     parameters: z.object({
       state: z.string().optional().describe("Two-letter state code (e.g., 'CA', 'TX'). Omit for national."),
-      sector: z.string().optional().describe("Sector: 'RES' (residential), 'COM' (commercial), 'IND' (industrial), 'ALL' (default)"),
-      data_type: z.string().optional().describe("'price' (default — cents/kWh), 'revenue', 'sales', 'customers'"),
-      frequency: z.string().optional().describe("'monthly' (default) or 'annual'"),
+      sector: z.enum(["RES", "COM", "IND", "ALL"]).optional().describe("Sector: RES=residential, COM=commercial, IND=industrial, ALL=default"),
+      data_type: z.enum(["price", "revenue", "sales", "customers"]).optional().describe("Data type (default: price in cents/kWh)"),
+      frequency: z.enum(["monthly", "annual"]).optional().describe("Frequency (default: monthly)"),
       start: z.string().optional().describe("Start date (YYYY-MM or YYYY). Default: 2 years ago"),
       length: z.number().int().optional().describe("Max rows (default: 60)"),
     }),
@@ -143,7 +143,7 @@ export const tools: Tool<any, any>[] = [
         "Price type: 'PRS' (citygate), 'PRP' (electric power), 'PRC' (commercial), " +
         "'PRI' (industrial), 'PRR' (residential). Default shows all.",
       ),
-      frequency: z.string().optional().describe("'monthly' (default) or 'annual'"),
+      frequency: z.enum(["monthly", "annual"]).optional().describe("Frequency (default: monthly)"),
       start: z.string().optional().describe("Start date (YYYY-MM). Default: 2 years ago"),
       length: z.number().int().optional().describe("Max rows (default: 60)"),
     }),
@@ -225,7 +225,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "EIA: Total Energy Overview", readOnlyHint: true },
     parameters: z.object({
       msn: z.string().optional().describe("MSN code to filter by. Omit for overview of major categories."),
-      frequency: z.string().optional().describe("'monthly' (default) or 'annual'"),
+      frequency: z.enum(["monthly", "annual"]).optional().describe("Frequency (default: monthly)"),
       start: z.string().optional().describe("Start date (YYYY-MM or YYYY). Default: 2 years ago"),
       length: z.number().int().optional().describe("Max rows (default: 60)"),
     }),

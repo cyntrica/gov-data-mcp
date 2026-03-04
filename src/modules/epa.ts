@@ -31,7 +31,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "EPA: Air Quality", readOnlyHint: true },
     parameters: z.object({
       state: z.string().describe("Two-letter state code: 'CA', 'TX', 'NY'"),
-      table: z.string().optional().describe("'AIR_QUALITY_MEASURES' (default), 'MONITORING_SITE'"),
+      table: z.enum(["AIR_QUALITY_MEASURES", "MONITORING_SITE"]).optional().describe("Data table (default: AIR_QUALITY_MEASURES)"),
       rows: z.string().optional().describe("Row range: '0:99' (default). Use '0:499' for more data."),
     }),
     execute: async ({ state, table, rows }) => {
@@ -53,7 +53,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "EPA: Facility Compliance", readOnlyHint: true },
     parameters: z.object({
       state: z.string().describe("Two-letter state code: 'CA', 'TX', 'NY'"),
-      media_type: z.string().optional().describe("'air' (Clean Air Act) or 'water' (Clean Water Act). Default: air"),
+      media_type: z.enum(["air", "water"]).optional().describe("Media type: air (Clean Air Act), water (Clean Water Act). Default: air"),
       major_only: z.boolean().optional().describe("Only show major facilities (true/false, default true)"),
       active_only: z.boolean().optional().describe("Only show active facilities (true/false, default true)"),
       limit: z.number().int().max(1000).optional().describe("Max results (default 20)"),

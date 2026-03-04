@@ -121,10 +121,41 @@ import { searchAwards, spendingByAgency, spendingByState, spendingOverTime } fro
 import { getCompanySubmissions, getCompanyFacts, searchFilings } from "us-gov-open-data-mcp/sdk/sec";
 ```
 
-## FBI Crime Data
+## FBI Crime Data Explorer
 
 ```typescript
-import { getNationalCrime, getCrimeByState, getArrestData } from "us-gov-open-data-mcp/sdk/fbi";
+import {
+  getAgenciesByState,
+  getSummarizedCrime,
+  getArrestData,
+  getExpandedHomicide,
+  getExpandedProperty,
+  getHateCrime,
+  getLawEnforcementEmployees,
+  getLesdcData,
+  getNibrsData,
+  getUseOfForceFederal,
+  getUseOfForceNational,
+  SUMMARIZED_OFFENSES,
+  ARREST_OFFENSES,
+  NIBRS_OFFENSES,
+  HATE_CRIME_BIAS_CODES,
+} from "us-gov-open-data-mcp/sdk/fbi";
+
+// Get national violent crime trends
+await getSummarizedCrime({ level: "national", offense: "V", fromYear: 2018, toYear: 2023 });
+
+// Get state-level arrest data
+await getArrestData({ level: "state", state: "CA", offense: "all", type: "counts" });
+
+// Get NIBRS incident data for aggravated assault
+await getNibrsData({ level: "national", offense: "13A" });
+
+// Get hate crime data filtered by bias
+await getHateCrime({ level: "national", bias: "21", type: "totals" }); // Anti-Jewish
+
+// Get expanded property details for burglary
+await getExpandedProperty({ level: "state", state: "TX", offense: "NB" });
 ```
 
 ## GovInfo

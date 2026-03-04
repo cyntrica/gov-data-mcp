@@ -82,7 +82,7 @@ export const tools: Tool<any, any>[] = [
     description: "Get climate observations (temperature, precipitation, snow, wind) from NOAA.\nRequires dataset ID + date range. Optionally filter by station or location.",
     annotations: { title: "NOAA: Climate Data", readOnlyHint: true },
     parameters: z.object({
-      dataset_id: z.string().describe("Dataset: 'GHCND' (daily), 'GSOM' (monthly), 'GSOY' (annual)"),
+      dataset_id: z.enum(["GHCND", "GSOM", "GSOY"]).describe("Dataset: GHCND=daily, GSOM=monthly, GSOY=annual"),
       start_date: z.string().describe("Start date YYYY-MM-DD"),
       end_date: z.string().describe("End date YYYY-MM-DD"),
       station_id: z.string().optional().describe("Station ID, e.g. 'GHCND:USW00094728' (Central Park, NYC)"),
@@ -108,7 +108,7 @@ export const tools: Tool<any, any>[] = [
     description: "Search NOAA location IDs (states, cities, countries) for use with other NOAA tools.",
     annotations: { title: "NOAA: Search Locations", readOnlyHint: true },
     parameters: z.object({
-      category: z.string().optional().describe("Category: 'ST' (states), 'CITY', 'CNTRY' (countries), 'CLIM_REG'"),
+      category: z.enum(["ST", "CITY", "CNTRY", "CLIM_REG"]).optional().describe("Location category: ST=states, CITY, CNTRY=countries, CLIM_REG=climate regions"),
       dataset_id: z.string().optional().describe("Filter by dataset, e.g. 'GHCND'"),
       limit: z.number().int().max(1000).optional().describe("Max results (default 50)"),
     }),

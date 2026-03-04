@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import type { Tool } from "fastmcp";
+import { keysEnum, describeEnum } from "../enum-utils.js";
 import {
   getTransportStats,
   getBorderCrossings,
@@ -115,9 +116,9 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "BTS: Border Crossings", readOnlyHint: true },
     parameters: z.object({
       state: z.string().optional().describe("State full name: 'Texas', 'California', 'New York'"),
-      border: z.string().optional().describe("'US-Mexico Border' or 'US-Canada Border'"),
+      border: z.enum(["US-Mexico Border", "US-Canada Border"]).optional().describe("Border"),
       port_name: z.string().optional().describe("Port of entry name: 'El Paso', 'San Ysidro', 'Detroit'"),
-      measure: z.string().optional().describe("'Trucks', 'Personal Vehicles', 'Pedestrians', 'Train Passengers', 'Buses'"),
+      measure: z.enum(keysEnum(BORDER_MEASURES)).optional().describe(`Measure type: ${describeEnum(BORDER_MEASURES)}`),
       limit: z.number().int().max(100).optional().describe("Max results (default 20)"),
     }),
     execute: async (args) => {

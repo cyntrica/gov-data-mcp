@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import type { Tool } from "fastmcp";
+import { keysEnum, describeEnum } from "../enum-utils.js";
 import { searchFilings, getFilingDetail, searchContributions, searchRegistrants, searchClients, searchLobbyists, FILING_TYPES, ISSUE_CODES } from "../sdk/senate-lobbying.js";
 
 export const name = "senate-lobbying";
@@ -64,9 +65,9 @@ export const tools: Tool<any, any>[] = [
     parameters: z.object({
       registrant_name: z.string().optional().describe("Lobbying firm or organization: 'Pfizer', 'Amazon', 'US Chamber of Commerce'"),
       client_name: z.string().optional().describe("Client who hired the lobbyist: 'Google', 'Meta', 'Boeing'"),
-      issue_code: z.string().optional().describe("Issue area code: 'TAX' (taxation), 'HCR' (health), 'DEF' (defense), 'ENV' (environment), 'ENG' (energy), 'IMM' (immigration), 'BUD' (budget), 'FIN' (finance), 'EDU' (education)"),
+      issue_code: z.enum(keysEnum(ISSUE_CODES)).optional().describe(`Issue area code: ${describeEnum(ISSUE_CODES)}`),
       filing_year: z.number().int().optional().describe("Year: 2020-2026"),
-      filing_type: z.string().optional().describe("'Q1','Q2','Q3','Q4' (quarterly), 'RN' (new registration)"),
+      filing_type: z.enum(keysEnum(FILING_TYPES)).optional().describe(`Filing type: ${describeEnum(FILING_TYPES)}`),
       page_size: z.number().int().max(25).optional().describe("Results per page (default 20)"),
     }),
     execute: async ({ registrant_name, client_name, issue_code, filing_year, filing_type, page_size }) => {

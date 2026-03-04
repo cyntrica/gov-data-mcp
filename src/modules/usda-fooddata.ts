@@ -44,12 +44,12 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "USDA FoodData: Search Foods", readOnlyHint: true },
     parameters: z.object({
       query: z.string().describe("Food search term (e.g. 'chicken breast', 'cheddar cheese', 'apple')"),
-      dataType: z.array(z.string()).optional().describe("Filter by data type: ['Foundation'], ['Branded'], ['SR Legacy', 'Foundation']"),
+      dataType: z.array(z.enum(["Foundation", "Branded", "SR Legacy", "Survey (FNDDS)"])).optional().describe("Filter by data type"),
       brandOwner: z.string().optional().describe("Filter by brand owner for branded foods (e.g. 'Kraft', 'General Mills')"),
       pageSize: z.number().int().max(200).optional().describe("Results per page (default 25, max 200)"),
       pageNumber: z.number().int().optional().describe("Page number (1-based)"),
-      sortBy: z.string().optional().describe("Sort field: 'dataType.keyword', 'lowercaseDescription.keyword', 'fdcId', 'publishedDate'"),
-      sortOrder: z.string().optional().describe("'asc' or 'desc'"),
+      sortBy: z.enum(["dataType.keyword", "lowercaseDescription.keyword", "fdcId", "publishedDate"]).optional().describe("Sort field"),
+      sortOrder: z.enum(["asc", "desc"]).optional().describe("Sort direction"),
     }),
     execute: async (args) => {
       const data = await searchFoods(args);
@@ -105,11 +105,11 @@ export const tools: Tool<any, any>[] = [
       "Useful for exploring available foods by data type without a specific search term.",
     annotations: { title: "USDA FoodData: List Foods", readOnlyHint: true },
     parameters: z.object({
-      dataType: z.array(z.string()).optional().describe("Filter by data type: ['Foundation'], ['Branded'], ['SR Legacy']"),
+      dataType: z.array(z.enum(["Foundation", "Branded", "SR Legacy", "Survey (FNDDS)"])).optional().describe("Filter by data type"),
       pageSize: z.number().int().max(200).optional().describe("Results per page (default 25, max 200)"),
       pageNumber: z.number().int().optional().describe("Page number (1-based)"),
-      sortBy: z.string().optional().describe("Sort field: 'dataType.keyword', 'lowercaseDescription.keyword', 'fdcId', 'publishedDate'"),
-      sortOrder: z.string().optional().describe("'asc' or 'desc'"),
+      sortBy: z.enum(["dataType.keyword", "lowercaseDescription.keyword", "fdcId", "publishedDate"]).optional().describe("Sort field"),
+      sortOrder: z.enum(["asc", "desc"]).optional().describe("Sort direction"),
     }),
     execute: async (args) => {
       const data = await listFoods(args);

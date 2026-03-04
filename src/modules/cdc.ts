@@ -56,8 +56,8 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "CDC: Life Expectancy", readOnlyHint: true },
     parameters: z.object({
       year: z.number().int().optional().describe("Year (1900–2018)"),
-      race: z.string().optional().describe("'All Races', 'Black', 'White'"),
-      sex: z.string().optional().describe("'Both Sexes', 'Male', 'Female'"),
+      race: z.enum(["All Races", "Black", "White"]).optional().describe("Race filter"),
+      sex: z.enum(["Both Sexes", "Male", "Female"]).optional().describe("Sex filter"),
       limit: z.number().int().max(1000).optional().describe("Max records (default 200)"),
     }),
     execute: async ({ year, race, sex, limit }) => {
@@ -77,7 +77,7 @@ export const tools: Tool<any, any>[] = [
     parameters: z.object({
       quarter: z.string().optional().describe("Quarter: '2024 Q4', '2025 Q1'. Omit for all."),
       cause: z.string().optional().describe("'All causes', 'Heart disease', 'Cancer', 'COVID-19', 'Drug overdose', 'Suicide', 'Diabetes', 'Alzheimer disease'"),
-      rate_type: z.string().optional().describe("'Age-adjusted' (default) or 'Crude'"),
+      rate_type: z.enum(["Age-adjusted", "Crude"]).optional().describe("Rate type (default: Age-adjusted)"),
       limit: z.number().int().max(1000).optional().describe("Max records (default 200)"),
     }),
     execute: async ({ quarter, cause, rate_type, limit }) => {
@@ -102,7 +102,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "CDC: County Health Indicators", readOnlyHint: true },
     parameters: z.object({
       state: z.string().optional().describe("Two-letter state code: 'NY', 'CA', 'TX'. Omit for all."),
-      measure: z.string().optional().describe("Measure ID: 'OBESITY', 'DIABETES', 'CSMOKING', 'DEPRESSION', 'BINGE', 'SLEEP', 'BPHIGH', 'LPA', 'ACCESS2', 'FOODINSECU', 'LONELINESS'"),
+      measure: z.string().optional().describe("Measure ID: 'OBESITY', 'DIABETES', 'CSMOKING', 'DEPRESSION', 'BINGE', 'SLEEP', 'BPHIGH', 'LPA', 'ACCESS2', 'FOODINSECU', 'LONELINESS', 'HOUSINSECU'"),
       limit: z.number().int().max(1000).optional().describe("Max records (default 200)"),
     }),
     execute: async ({ state, measure, limit }) => {
@@ -186,7 +186,7 @@ export const tools: Tool<any, any>[] = [
     parameters: z.object({
       state: z.string().optional().describe("Full state name: 'West Virginia', 'Ohio', 'New Hampshire'. Omit for all."),
       year: z.number().int().optional().describe("Year (1999\u20132016)"),
-      sex: z.string().optional().describe("'Both Sexes', 'Male', 'Female'"),
+      sex: z.enum(["Both Sexes", "Male", "Female"]).optional().describe("Sex filter"),
       limit: z.number().int().max(1000).optional().describe("Max records (default 200)"),
     }),
     execute: async ({ state, year, sex, limit }) => {
@@ -226,7 +226,7 @@ export const tools: Tool<any, any>[] = [
       "Great for long-term trend analysis \u2014 120+ years of data.",
     annotations: { title: "CDC: Historical Death Rates", readOnlyHint: true },
     parameters: z.object({
-      cause: z.string().optional().describe("'Heart Disease', 'Cancer', 'Stroke', 'Unintentional injuries', 'CLRD'. Omit for all causes."),
+      cause: z.enum(["Heart Disease", "Cancer", "Stroke", "Unintentional injuries", "CLRD"]).optional().describe("Cause of death. Omit for all causes."),
       start_year: z.number().int().optional().describe("Start year (earliest: 1900)"),
       end_year: z.number().int().optional().describe("End year (latest: ~2017)"),
       limit: z.number().int().max(1000).optional().describe("Max records (default 200)"),

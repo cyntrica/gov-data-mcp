@@ -6,6 +6,7 @@
 
 import { z } from "zod";
 import type { Tool, InputPrompt } from "fastmcp";
+import { keysEnum, describeEnum } from "../enum-utils.js";
 import {
   searchBills,
   getBillDetails,
@@ -35,6 +36,9 @@ import {
   getCongressionalRecord,
   currentCongress,
   billTypeToUrlSegment,
+  BILL_TYPES,
+  CHAMBERS,
+  AMENDMENT_TYPES,
   type CongressBill,
   type CongressMember,
   type CongressVoteSummary,
@@ -67,12 +71,9 @@ export const workflow = "congress_search_bills → congress_bill_details for spo
 export const tips = "Congress numbers: 119th (2025-2026), 118th (2023-2024), 117th (2021-2022). Bill types: hr, s, hjres, sjres, hconres, sconres, hres, sres. House votes: use year param for historical (1990+). Senate votes: 101st Congress (1989) to present. Always compare House and Senate votes on the same bill to reveal bicameral differences. For accountability investigations: use congress_member_details to get committee assignments (e.g. Banking Committee chair), then congress_senate_votes/congress_house_votes for party-line breakdown, then cross-reference with FEC disbursements and lobbying spend.";
 
 export const reference = {
-  billTypes: {
-    hr: "House Bill", s: "Senate Bill",
-    hjres: "House Joint Resolution", sjres: "Senate Joint Resolution",
-    hconres: "House Concurrent Resolution", sconres: "Senate Concurrent Resolution",
-    hres: "House Simple Resolution", sres: "Senate Simple Resolution",
-  } as Record<string, string>,
+  billTypes: BILL_TYPES,
+  chambers: CHAMBERS,
+  amendmentTypes: AMENDMENT_TYPES,
   congressNumbers: {
     119: "2025-2026", 118: "2023-2024", 117: "2021-2022",
     116: "2019-2020", 115: "2017-2018", 114: "2015-2016",
@@ -160,7 +161,7 @@ export const tools: Tool<any, any>[] = [
     parameters: z.object({
       query: z.string().optional().describe("Keyword/text search across bill titles and summaries (e.g., 'infrastructure', 'tax reform', 'climate')"),
       congress: z.number().int().optional().describe("Congress number (e.g., 119 for 2025-2026, 118 for 2023-2024). Default: current"),
-      bill_type: z.string().optional().describe("Bill type: 'hr', 's', 'hjres', 'sjres', 'hconres', 'sconres', 'hres', 'sres'"),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).optional().describe("Bill type"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
       offset: z.number().int().optional().describe("Results offset for pagination (default: 0)"),
     }),
@@ -185,7 +186,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Bill Details", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().describe("Congress number (e.g., 119, 118, 117)"),
-      bill_type: z.string().describe("Bill type: 'hr', 's', 'hjres', 'sjres'"),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).describe("Bill type"),
       bill_number: z.number().int().describe("Bill number (e.g., 1, 25, 3076)"),
     }),
     execute: async ({ congress, bill_type, bill_number }) => {
@@ -398,7 +399,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Member's Sponsored Bills", readOnlyHint: true },
     parameters: z.object({
       bioguide_id: z.string().describe("Member's BioGuide ID (e.g., 'S000033' for Bernie Sanders, 'C001098' for Ted Cruz)"),
-      type: z.string().optional().describe("'sponsored' (default) or 'cosponsored'"),
+      type: z.enum(["sponsored", "cosponsored"]).optional().describe("Bill relationship type (default: sponsored)"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
     }),
     execute: async ({ bioguide_id, type, limit }) => {
@@ -428,7 +429,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Bill Actions/Timeline", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().describe("Congress number (e.g., 118)"),
-      bill_type: z.string().describe("Bill type: 'hr', 's', 'hjres', 'sjres', etc."),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).describe("Bill type"),
       bill_number: z.number().int().describe("Bill number"),
       limit: z.number().int().positive().max(250).optional().describe("Max actions to return (default: 100)"),
     }),
@@ -460,7 +461,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Bill Amendments", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().describe("Congress number"),
-      bill_type: z.string().describe("Bill type: 'hr', 's', 'hjres', 'sjres', etc."),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).describe("Bill type"),
       bill_number: z.number().int().describe("Bill number"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 50)"),
     }),
@@ -493,7 +494,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Bill Summaries", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().describe("Congress number"),
-      bill_type: z.string().describe("Bill type: 'hr', 's', etc."),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).describe("Bill type"),
       bill_number: z.number().int().describe("Bill number"),
     }),
     execute: async ({ congress, bill_type, bill_number }) => {
@@ -522,7 +523,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Bill Text Versions", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().describe("Congress number"),
-      bill_type: z.string().describe("Bill type: 'hr', 's', etc."),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).describe("Bill type"),
       bill_number: z.number().int().describe("Bill number"),
     }),
     execute: async ({ congress, bill_type, bill_number }) => {
@@ -549,7 +550,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Related Bills", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().describe("Congress number"),
-      bill_type: z.string().describe("Bill type: 'hr', 's', etc."),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).describe("Bill type"),
       bill_number: z.number().int().describe("Bill number"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 50)"),
     }),
@@ -580,7 +581,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Bill Subjects", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().describe("Congress number"),
-      bill_type: z.string().describe("Bill type: 'hr', 's', etc."),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).describe("Bill type"),
       bill_number: z.number().int().describe("Bill number"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 100)"),
     }),
@@ -602,7 +603,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Bill Committees", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().describe("Congress number"),
-      bill_type: z.string().describe("Bill type: 'hr', 's', etc."),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).describe("Bill type"),
       bill_number: z.number().int().describe("Bill number"),
     }),
     execute: async ({ congress, bill_type, bill_number }) => {
@@ -665,7 +666,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: List Committees", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().optional().describe("Congress number (e.g., 119). Default: current"),
-      chamber: z.string().optional().describe("Chamber: 'house', 'senate', or 'joint'"),
+      chamber: z.enum(keysEnum(CHAMBERS)).optional().describe("Chamber"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 50)"),
     }),
     execute: async ({ congress, chamber, limit }) => {
@@ -694,7 +695,7 @@ export const tools: Tool<any, any>[] = [
       "Useful for tracking which bills die in committee vs. get reported out.",
     annotations: { title: "Congress: Committee Bills", readOnlyHint: true },
     parameters: z.object({
-      chamber: z.string().describe("Chamber: 'house', 'senate', or 'joint'"),
+      chamber: z.enum(keysEnum(CHAMBERS)).describe("Chamber"),
       committee_code: z.string().describe("Committee system code (e.g., 'hsba00' for House Financial Services, 'ssfi00' for Senate Finance)"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
     }),
@@ -721,7 +722,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Search Amendments", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().optional().describe("Congress number (default: current)"),
-      amendment_type: z.string().optional().describe("Amendment type: 'hamdt' (House), 'samdt' (Senate), 'suamdt' (Senate Unnumbered)"),
+      amendment_type: z.enum(keysEnum(AMENDMENT_TYPES)).optional().describe("Amendment type"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
     }),
     execute: async ({ congress, amendment_type, limit }) => {
@@ -751,7 +752,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Amendment Details", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().describe("Congress number"),
-      amendment_type: z.string().describe("'hamdt' (House) or 'samdt' (Senate)"),
+      amendment_type: z.enum(keysEnum(AMENDMENT_TYPES)).describe("Amendment type"),
       amendment_number: z.union([z.string(), z.number()]).describe("Amendment number"),
     }),
     execute: async ({ congress, amendment_type, amendment_number }) => {

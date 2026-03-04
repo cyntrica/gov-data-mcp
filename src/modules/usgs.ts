@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import type { Tool } from "fastmcp";
+import { keysEnum, describeEnum } from "../enum-utils.js";
 import {
   searchEarthquakes,
   countEarthquakes,
@@ -77,7 +78,7 @@ export const tools: Tool<any, any>[] = [
       latitude: z.number().optional().describe("Center latitude for radius search"),
       longitude: z.number().optional().describe("Center longitude for radius search"),
       maxradiuskm: z.number().optional().describe("Search radius in km (requires lat/lon)"),
-      alertlevel: z.enum(["green", "yellow", "orange", "red"]).optional().describe("PAGER alert level filter"),
+      alertlevel: z.enum(keysEnum(ALERT_LEVELS)).optional().describe(`PAGER alert level: ${describeEnum(ALERT_LEVELS)}`),
       limit: z.number().int().max(200).optional().describe("Max results (default 20, max 200)"),
       orderby: z.enum(["time", "time-asc", "magnitude", "magnitude-asc"]).optional().describe("Sort order (default: time)"),
     }),
@@ -171,7 +172,7 @@ export const tools: Tool<any, any>[] = [
     parameters: z.object({
       state_cd: z.string().optional().describe("Two-letter state code: 'CA', 'TX'"),
       county_cd: z.string().optional().describe("County FIPS code"),
-      site_type: z.string().optional().describe("Site type: 'ST' (stream, default), 'GW' (groundwater), 'LK' (lake), 'SP' (spring)"),
+      site_type: z.enum(["ST", "GW", "LK", "SP"]).optional().describe("Site type: ST (stream), GW (groundwater), LK (lake), SP (spring)"),
     }),
     execute: async (args) => {
       const data = await searchWaterSites({

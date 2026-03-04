@@ -107,10 +107,10 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Federal Register: Presidential Documents", readOnlyHint: true },
     parameters: z.object({
       keyword: z.string().optional().describe("Search keyword"),
-      doc_type: z.string().optional().describe(
-        "Document subtype: 'executive_order', 'memorandum', 'proclamation', 'notice', 'determination'. Omit for all."
+      doc_type: z.enum(["executive_order", "memorandum", "proclamation", "notice", "determination"]).optional().describe(
+        "Document subtype"
       ),
-      president: z.string().optional().describe("President slug: 'donald-trump', 'joe-biden', 'barack-obama'"),
+      president: z.string().optional().describe("President slug: 'donald-trump', 'joe-biden', 'barack-obama', 'george-w-bush', 'william-j-clinton'"),
       start_date: z.string().optional().describe("Start date YYYY-MM-DD"),
       end_date: z.string().optional().describe("End date YYYY-MM-DD"),
       per_page: z.number().int().positive().max(100).optional().describe("Results per page (default: 20)"),
@@ -136,7 +136,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Federal Register: Search Rules & Regulations", readOnlyHint: true },
     parameters: z.object({
       keyword: z.string().optional().describe("Search keyword, e.g. 'tariff', 'emissions', 'banking'"),
-      doc_type: z.string().optional().describe("'RULE' (final rules), 'PRORULE' (proposed rules), 'NOTICE' (notices). Omit for all."),
+      doc_type: z.enum(["RULE", "PRORULE", "NOTICE"]).optional().describe("Rule type"),
       agency: z.string().optional().describe("Agency slug, e.g. 'environmental-protection-agency', 'securities-and-exchange-commission'"),
       start_date: z.string().optional().describe("Start date YYYY-MM-DD"),
       end_date: z.string().optional().describe("End date YYYY-MM-DD"),

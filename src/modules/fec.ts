@@ -117,7 +117,7 @@ export const tools: Tool<any, any>[] = [
       name: z.string().optional().describe("Candidate name to search for"),
       state: z.string().optional().describe("Two-letter state code, e.g. 'CA', 'TX', 'NY'"),
       party: z.string().optional().describe("Three-letter party code: 'DEM', 'REP', 'LIB', 'GRE', etc."),
-      office: z.string().optional().describe("Office: 'H' (House), 'S' (Senate), 'P' (President)"),
+      office: z.enum(["H", "S", "P"]).optional().describe("Office: H=House, S=Senate, P=President"),
       election_year: z.number().optional().describe("Election year, e.g. 2024"),
       page: z.number().int().positive().optional().describe("Page number (default: 1)"),
       per_page: z.number().int().positive().max(100).optional().describe("Results per page (default: 20, max: 100)"),
@@ -222,7 +222,7 @@ export const tools: Tool<any, any>[] = [
       "Get top candidates ranked by total money raised for a given office and election cycle.",
     annotations: { title: "FEC: Top Candidates by Fundraising", readOnlyHint: true },
     parameters: z.object({
-      office: z.string().describe("Office: 'H' (House), 'S' (Senate), 'P' (President)"),
+      office: z.enum(["H", "S", "P"]).describe("Office: H=House, S=Senate, P=President"),
       election_year: z.number().describe("Election year, e.g. 2024"),
       state: z.string().optional().describe("Two-letter state code to filter by"),
       per_page: z.number().int().positive().max(50).optional().describe("Number of results (default: 20)"),

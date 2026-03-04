@@ -73,7 +73,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "GovInfo: Bill/Law Full Text", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().describe("Congress number (e.g., 119, 118, 117)"),
-      bill_type: z.string().describe("Bill type: 'hr', 's', 'hjres', 'sjres'"),
+      bill_type: z.enum(["hr", "s", "hjres", "sjres"]).describe("Bill type"),
       bill_number: z.number().int().describe("Bill number (e.g., 1, 5376)"),
       version: z.string().optional().describe(
         "Bill version: 'enr' (enrolled/signed, default), 'eh' (engrossed House), " +

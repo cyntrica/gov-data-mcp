@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import type { Tool } from "fastmcp";
+import { keysEnum, describeEnum } from "../enum-utils.js";
 import {
   searchTrials,
   getTrialDetail,
@@ -93,9 +94,9 @@ export const tools: Tool<any, any>[] = [
       condition: z.string().optional().describe("Disease or condition: 'lung cancer', 'diabetes', 'Alzheimer'"),
       intervention: z.string().optional().describe("Drug, device, or procedure name: 'pembrolizumab', 'insulin'"),
       sponsor: z.string().optional().describe("Sponsor/funder: 'Pfizer', 'NIH', 'Moderna'"),
-      status: z.string().optional().describe("RECRUITING, COMPLETED, ACTIVE_NOT_RECRUITING, NOT_YET_RECRUITING, TERMINATED"),
-      phase: z.string().optional().describe("PHASE1, PHASE2, PHASE3, PHASE4, EARLY_PHASE1"),
-      study_type: z.string().optional().describe("INTERVENTIONAL, OBSERVATIONAL, EXPANDED_ACCESS"),
+      status: z.enum(keysEnum(TRIAL_STATUSES)).optional().describe(`Trial status: ${describeEnum(TRIAL_STATUSES, 5)}`),
+      phase: z.enum(keysEnum(TRIAL_PHASES)).optional().describe(`Trial phase: ${describeEnum(TRIAL_PHASES)}`),
+      study_type: z.enum(keysEnum(STUDY_TYPES)).optional().describe(`Study type: ${describeEnum(STUDY_TYPES)}`),
       location: z.string().optional().describe("State or country: 'California', 'United States', 'Germany'"),
       page_size: z.number().int().max(50).optional().describe("Results per page (default 10, max 50)"),
     }),

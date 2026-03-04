@@ -282,33 +282,37 @@ export function currentCongress(): number {
   return Math.floor((year - 1789) / 2) + 1;
 }
 
-/** Map bill type codes to Congress.gov URL segments. */
-const BILL_URL_SEGMENTS: Record<string, string> = {
-  hr: "house-bill",
-  s: "senate-bill",
-  hjres: "house-joint-resolution",
-  sjres: "senate-joint-resolution",
-  hconres: "house-concurrent-resolution",
-  sconres: "senate-concurrent-resolution",
-  hres: "house-resolution",
-  sres: "senate-resolution",
-};
-
-export function billTypeToUrlSegment(billType: string): string {
-  return BILL_URL_SEGMENTS[billType.toLowerCase()] || "house-bill";
-}
-
 // ─── Reference data ──────────────────────────────────────────────────
 
-export const billTypes: Record<string, { name: string; urlSegment: string }> = {
-  hr: { name: "House Bill", urlSegment: "house-bill" },
-  s: { name: "Senate Bill", urlSegment: "senate-bill" },
-  hjres: { name: "House Joint Resolution", urlSegment: "house-joint-resolution" },
-  sjres: { name: "Senate Joint Resolution", urlSegment: "senate-joint-resolution" },
-  hconres: { name: "House Concurrent Resolution", urlSegment: "house-concurrent-resolution" },
-  sconres: { name: "Senate Concurrent Resolution", urlSegment: "senate-concurrent-resolution" },
-  hres: { name: "House Simple Resolution", urlSegment: "house-resolution" },
-  sres: { name: "Senate Simple Resolution", urlSegment: "senate-resolution" },
+/** Single source of truth for bill type metadata. */
+const BILL_TYPE_DATA = {
+  hr:      { name: "House Bill",                    urlSegment: "house-bill" },
+  s:       { name: "Senate Bill",                   urlSegment: "senate-bill" },
+  hjres:   { name: "House Joint Resolution",        urlSegment: "house-joint-resolution" },
+  sjres:   { name: "Senate Joint Resolution",       urlSegment: "senate-joint-resolution" },
+  hconres: { name: "House Concurrent Resolution",   urlSegment: "house-concurrent-resolution" },
+  sconres: { name: "Senate Concurrent Resolution",  urlSegment: "senate-concurrent-resolution" },
+  hres:    { name: "House Simple Resolution",       urlSegment: "house-resolution" },
+  sres:    { name: "Senate Simple Resolution",      urlSegment: "senate-resolution" },
+} as const;
+
+/** Bill type codes → display names (for keysEnum/describeEnum in tool parameters) */
+export const BILL_TYPES: Record<string, string> =
+  Object.fromEntries(Object.entries(BILL_TYPE_DATA).map(([k, v]) => [k, v.name]));
+
+/** Convert a bill type code to its Congress.gov URL segment. */
+export function billTypeToUrlSegment(billType: string): string {
+  return BILL_TYPE_DATA[billType.toLowerCase() as keyof typeof BILL_TYPE_DATA]?.urlSegment ?? "house-bill";
+}
+
+/** Chamber codes */
+export const CHAMBERS: Record<string, string> = {
+  house: "House of Representatives", senate: "Senate", joint: "Joint",
+};
+
+/** Amendment type codes */
+export const AMENDMENT_TYPES: Record<string, string> = {
+  hamdt: "House Amendment", samdt: "Senate Amendment", suamdt: "Senate Unnumbered Amendment",
 };
 
 export const congressNumbers: Record<number, string> = {

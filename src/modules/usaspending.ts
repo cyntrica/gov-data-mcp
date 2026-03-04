@@ -44,7 +44,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "USAspending: Search Awards", readOnlyHint: true },
     parameters: z.object({
       keyword: z.string().optional().describe("Keyword to search across award descriptions and recipient names"),
-      award_type: z.string().optional().describe("'contracts', 'grants', 'loans', 'direct_payments', or comma-separated codes"),
+      award_type: z.enum(["contracts", "grants", "loans", "direct_payments"]).optional().describe("Award type filter"),
       agency: z.string().optional().describe("Awarding agency name, e.g. 'Department of Defense'"),
       recipient: z.string().optional().describe("Recipient/company name to search for"),
       state: z.string().optional().describe("Two-letter state code, e.g. 'CA', 'TX'"),
@@ -83,7 +83,7 @@ export const tools: Tool<any, any>[] = [
       fiscal_year: z.number().int().optional().describe("Fiscal year (default: current)"),
       state: z.string().optional().describe("Two-letter state code, e.g. 'CA', 'TX'"),
       keyword: z.string().optional().describe("Keyword to filter spending"),
-      award_type: z.string().optional().describe("'contracts', 'grants', 'loans', 'direct_payments'"),
+      award_type: z.enum(["contracts", "grants", "loans", "direct_payments"]).optional().describe("Award type filter"),
       limit: z.number().int().positive().max(100).optional().describe("Number of agencies (default: 20)"),
     }),
     execute: async ({ fiscal_year, state, keyword, award_type, limit }) => {
@@ -135,7 +135,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "USAspending: Top Recipients", readOnlyHint: true },
     parameters: z.object({
       fiscal_year: z.number().int().optional().describe("Fiscal year (default: current)"),
-      award_type: z.string().optional().describe("'contracts', 'grants', 'loans', 'direct_payments'"),
+      award_type: z.enum(["contracts", "grants", "loans", "direct_payments"]).optional().describe("Award type filter"),
       state: z.string().optional().describe("Two-letter state code, e.g. 'CA', 'TX'"),
       agency: z.string().optional().describe("Awarding agency name, e.g. 'Department of Energy'"),
       limit: z.number().int().positive().max(100).optional().describe("Number of recipients (default: 25)"),
@@ -161,11 +161,11 @@ export const tools: Tool<any, any>[] = [
       "Useful for identifying trends.",
     annotations: { title: "USAspending: Spending Over Time", readOnlyHint: true },
     parameters: z.object({
-      group: z.string().optional().describe("Time grouping: 'month' (default), 'quarter', or 'fiscal_year'"),
+      group: z.enum(["month", "quarter", "fiscal_year"]).optional().describe("Time grouping (default: month)"),
       start_date: z.string().optional().describe("Start date YYYY-MM-DD (default: 3 years ago)"),
       end_date: z.string().optional().describe("End date YYYY-MM-DD (default: today)"),
       agency: z.string().optional().describe("Filter to specific agency name"),
-      award_type: z.string().optional().describe("'contracts', 'grants', 'loans', 'direct_payments'"),
+      award_type: z.enum(["contracts", "grants", "loans", "direct_payments"]).optional().describe("Award type filter"),
       state: z.string().optional().describe("Two-letter state code, e.g. 'CA', 'TX'"),
       keyword: z.string().optional().describe("Keyword to filter spending"),
     }),

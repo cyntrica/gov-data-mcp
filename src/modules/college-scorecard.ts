@@ -136,7 +136,7 @@ export const tools: Tool<any, any>[] = [
       "Rankings: 'earnings' (highest median pay 10yr after entry), 'graduation' (highest completion rate), 'expensive' (highest tuition)",
     annotations: { title: "College Scorecard: Rankings", readOnlyHint: true },
     parameters: z.object({
-      ranking: z.string().describe("'earnings' (highest pay), 'graduation' (highest grad rate), 'expensive' (highest cost)"),
+      ranking: z.enum(["earnings", "graduation", "expensive"]).describe("Ranking metric"),
       state: z.string().optional().describe("Filter to state: 'CA', 'NY', 'TX'"),
       ownership: z.number().int().optional().describe("1=Public, 2=Private nonprofit, 3=Private for-profit"),
       per_page: z.number().int().max(100).optional().describe("Number of schools (default 20)"),

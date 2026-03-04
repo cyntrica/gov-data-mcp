@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import type { Tool, InputPrompt } from "fastmcp";
+import { keysEnum, describeEnum } from "../enum-utils.js";
 import {
   getScores,
   getAchievementLevels,
@@ -68,7 +69,7 @@ export const tools: Tool<any, any>[] = [
       variable: z.string().optional().describe("'TOTAL' (default), 'SDRACE' (race), 'GENDER', 'SLUNCH3' (poverty), 'PARED' (parent ed), 'IEP' (disability), 'LEP' (English learners). Crosstab: 'SDRACE+GENDER'"),
       jurisdiction: z.string().optional().describe("'NP' (national public, default), or state/district codes: 'CA', 'TX', 'XN' (NYC), 'XC' (Chicago). Comma-separate for multiple."),
       year: z.string().optional().describe("Assessment year: '2022', '2019', '2017'. Default: most recent. Use 'Current' for latest. Append R2 for non-accommodated: '2019R2'."),
-      stat_type: z.string().optional().describe("'MN:MN' (mean, default), 'ALC:AP' (% at/above proficient), 'ALC:BB' (% below basic), 'PC:P5' (50th percentile), 'RP:RP' (row percent)"),
+      stat_type: z.enum(keysEnum(STAT_TYPES)).optional().describe(`Statistic type: ${describeEnum(STAT_TYPES)}`),
       subscale: z.string().optional().describe("Override the default composite subscale. E.g. math: 'MRPS1' (numbers), 'MRPS3' (geometry). See reference for all codes."),
       categoryindex: z.string().optional().describe("Filter specific categories. E.g. for SDRACE: '1' (White), '2' (Black), '3' (Hispanic). For crosstab: '1+1,1+2' (White/Male, White/Female)"),
     }),

@@ -5,7 +5,7 @@ title: US Government Open Data MCP
 
 # US Government Open Data MCP
 
-An MCP server + TypeScript SDK for **39 U.S. government and international data APIs** — 212 tools covering economic, fiscal, health, education, energy, environment, lobbying, housing, patents, safety, banking, consumer protection, workplace safety, transportation, seismic, clinical trials, pharma payments, research funding, and legislative data.
+An MCP server + TypeScript SDK for **39 U.S. government and international data APIs** — 219 tools covering economic, fiscal, health, education, energy, environment, lobbying, housing, patents, safety, banking, consumer protection, workplace safety, transportation, seismic, clinical trials, pharma payments, research funding, and legislative data.
 
 ## Quick Start
 
@@ -46,7 +46,9 @@ These were generated entirely from live government API data — no manual data e
 | **Legislative** | Congress.gov, Federal Register, GovInfo, Regulations.gov |
 | **Financial** | FEC, Senate Lobbying, SEC, FDIC, CFPB |
 | **Health** | CDC, FDA, CMS, ClinicalTrials.gov, Open Payments |
-| **Other** | Census, USDA, World Bank, EPA, NOAA, FEMA, USGS, NHTSA, HUD, USPTO, NAEP, College Scorecard, NREL, DOL, BTS |
+| **Justice** | FBI Crime Data, DOJ News |
+| **Research** | NIH RePORTER, USPTO, ClinicalTrials.gov |
+| **Other** | Census, USDA, World Bank, EPA, NOAA, FEMA, USGS, NHTSA, HUD, NAEP, College Scorecard, NREL, DOL, BTS |
 
 ## Install
 

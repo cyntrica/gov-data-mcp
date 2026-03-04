@@ -90,7 +90,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "DOJ: Press Releases", readOnlyHint: true },
     parameters: z.object({
       title: z.string().optional().describe("Filter by title keyword: 'cybercrime', 'antitrust', 'fentanyl', 'civil rights'"),
-      sort: z.string().optional().describe("Sort by: 'date' (press release date), 'created' (when added). Default: date"),
+      sort: z.enum(["date", "created"]).optional().describe("Sort by: 'date' (press release date), 'created' (when added)"),
       direction: z.enum(["ASC", "DESC"]).optional().describe("Sort direction: 'DESC' (newest first, default), 'ASC' (oldest first)"),
       pagesize: z.number().int().max(50).optional().describe("Results per page (default 20, max 50)"),
       page: z.number().int().optional().describe("Page number (zero-indexed). Use with pagesize for pagination."),
@@ -153,7 +153,7 @@ export const tools: Tool<any, any>[] = [
       "Covers policy discussions, division activities, and enforcement context.",
     annotations: { title: "DOJ: Blog Entries", readOnlyHint: true },
     parameters: z.object({
-      sort: z.string().optional().describe("Sort by: 'date', 'created'. Default: date"),
+      sort: z.enum(["date", "created"]).optional().describe("Sort by"),
       direction: z.enum(["ASC", "DESC"]).optional().describe("Sort direction: 'DESC' (newest first), 'ASC'"),
       pagesize: z.number().int().max(50).optional().describe("Results per page (default 20, max 50)"),
       page: z.number().int().optional().describe("Page number (zero-indexed)"),

@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import type { Tool } from "fastmcp";
+import { keysEnum, describeEnum } from "../enum-utils.js";
 import {
   searchProjects,
   searchPublications,
@@ -114,13 +115,13 @@ export const tools: Tool<any, any>[] = [
     parameters: z.object({
       text: z.string().optional().describe("Free-text search in titles, abstracts, and terms: 'breast cancer', 'CRISPR', 'opioid'"),
       fiscal_years: z.array(z.number().int()).optional().describe("Fiscal years: [2024] or [2020,2021,2022,2023,2024]"),
-      agencies: z.array(z.string()).optional().describe("NIH institute codes: ['NCI'], ['NHLBI','NIDDK'], ['NIAID']"),
+      agencies: z.array(z.enum(keysEnum(NIH_AGENCIES))).optional().describe(`NIH institute codes: ${describeEnum(NIH_AGENCIES)}`),
       pi_name: z.string().optional().describe("Principal investigator name (partial match): 'Fauci', 'Collins'"),
       org_names: z.array(z.string()).optional().describe("Organization names (wildcard): ['JOHNS HOPKINS'], ['STANFORD']"),
       org_states: z.array(z.string()).optional().describe("State abbreviations: ['CA','NY'], ['TX']"),
       spending_categories: z.array(z.number().int()).optional().describe("RCDC category IDs: [27]=Cancer, [7]=Alzheimer's, [41]=Diabetes, [93]=Opioids, [60]=HIV/AIDS"),
-      activity_codes: z.array(z.string()).optional().describe("Grant types: ['R01'] (research), ['T32'] (training), ['P01'] (program project)"),
-      funding_mechanism: z.array(z.string()).optional().describe("Mechanism codes: ['RG'] (research), ['SB'] (small business), ['TN'] (training)"),
+      activity_codes: z.array(z.enum(keysEnum(ACTIVITY_CODES))).optional().describe(`Grant types: ${describeEnum(ACTIVITY_CODES)}`),
+      funding_mechanism: z.array(z.enum(keysEnum(FUNDING_MECHANISMS))).optional().describe(`Mechanism codes: ${describeEnum(FUNDING_MECHANISMS)}`),
       award_amount_min: z.number().optional().describe("Minimum award amount in dollars"),
       award_amount_max: z.number().optional().describe("Maximum award amount in dollars"),
       covid_response: z.array(z.string()).optional().describe("COVID funding: ['All'], ['C3'] (CARES Act), ['C6'] (American Rescue Plan)"),
@@ -238,7 +239,7 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "NIH RePORTER: Projects by Agency", readOnlyHint: true },
     parameters: z.object({
       fiscal_year: z.number().int().describe("Fiscal year: 2024"),
-      agencies: z.array(z.string()).optional().describe("Specific agency codes to check (default: top 25). E.g. ['NCI','NHLBI','NIAID','NIA','NIMH']"),
+      agencies: z.array(z.enum(keysEnum(NIH_AGENCIES))).optional().describe("Specific agency codes to check (default: top 25)"),
     }),
     execute: async (args) => {
       const data = await getProjectsByAgency(args.fiscal_year, args.agencies);

@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import type { Tool } from "fastmcp";
+import { keysEnum, describeEnum } from "../enum-utils.js";
 import {
   searchDocuments,
   getDocument,
@@ -11,6 +12,7 @@ import {
   getComment,
   searchDockets,
   getDocket,
+  DOCUMENT_TYPES,
 } from "../sdk/regulations.js";
 
 // ─── Metadata (server.ts reads these) ────────────────────────────────
@@ -54,11 +56,11 @@ export const tools: Tool<any, any>[] = [
       searchTerm: z.string().optional().describe("Full-text search keyword (e.g. 'water quality', 'emissions')"),
       agencyId: z.string().optional().describe("Agency abbreviation: 'EPA', 'FDA', 'DOL', 'HHS', 'DOT', 'OSHA'"),
       docketId: z.string().optional().describe("Docket ID (e.g. 'EPA-HQ-OAR-2003-0129')"),
-      documentType: z.string().optional().describe("'Proposed Rule', 'Rule', 'Supporting & Related Material', 'Other'"),
+      documentType: z.enum(keysEnum(DOCUMENT_TYPES)).optional().describe(`Document type: ${describeEnum(DOCUMENT_TYPES)}`),
       postedDate: z.string().optional().describe("Exact date: '2024-01-15'"),
       postedDateGe: z.string().optional().describe("Posted on or after date: '2024-01-01'"),
       postedDateLe: z.string().optional().describe("Posted on or before date: '2024-12-31'"),
-      sort: z.string().optional().describe("Sort field: 'postedDate', '-postedDate', 'title', '-title'"),
+      sort: z.enum(["postedDate", "-postedDate", "title", "-title"]).optional().describe("Sort order"),
       pageSize: z.number().int().max(250).optional().describe("Results per page (max 250, default 25)"),
       pageNumber: z.number().int().optional().describe("Page number (1-based)"),
     }),
@@ -108,7 +110,7 @@ export const tools: Tool<any, any>[] = [
       docketId: z.string().optional().describe("Docket ID to get comments for a specific rulemaking"),
       postedDateGe: z.string().optional().describe("Comments posted on or after date: '2024-01-01'"),
       postedDateLe: z.string().optional().describe("Comments posted on or before date: '2024-12-31'"),
-      sort: z.string().optional().describe("'-postedDate' for newest first, 'postedDate' for oldest first"),
+      sort: z.enum(["-postedDate", "postedDate"]).optional().describe("Sort order (default: newest first)"),
       pageSize: z.number().int().max(250).optional().describe("Results per page (max 250, default 25)"),
       pageNumber: z.number().int().optional().describe("Page number (1-based)"),
     }),
@@ -153,8 +155,8 @@ export const tools: Tool<any, any>[] = [
     parameters: z.object({
       searchTerm: z.string().optional().describe("Keyword search (e.g. 'clean air', 'food safety')"),
       agencyId: z.string().optional().describe("Agency abbreviation: 'EPA', 'FDA', 'DOL', 'HHS'. Comma-separate for multiple: 'EPA,FDA'"),
-      docketType: z.string().optional().describe("'Rulemaking' or 'Nonrulemaking'"),
-      sort: z.string().optional().describe("'title' or '-title'"),
+      docketType: z.enum(["Rulemaking", "Nonrulemaking"]).optional().describe("Docket type"),
+      sort: z.enum(["title", "-title"]).optional().describe("Sort order"),
       pageSize: z.number().int().max(250).optional().describe("Results per page (max 250, default 25)"),
       pageNumber: z.number().int().optional().describe("Page number (1-based)"),
     }),

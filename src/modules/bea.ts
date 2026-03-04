@@ -70,7 +70,7 @@ export const tools: Tool<any, any>[] = [
       table_name: z.string().optional().describe(
         "NIPA table name (default: T10101 — Real GDP). Other: T10106 (nominal GDP), T10111 (% change), T20100 (personal income)",
       ),
-      frequency: z.string().optional().describe("'Q' for quarterly (default), 'A' for annual, 'M' for monthly"),
+      frequency: z.enum(["Q", "A", "M"]).optional().describe("Frequency: Q=quarterly (default), A=annual, M=monthly"),
       year: z.string().optional().describe("Year(s) to fetch. Use 'X' for all, 'LAST5' for last 5, or specific year. Default: LAST5"),
     }),
     execute: async ({ table_name, frequency, year }) => {
@@ -169,7 +169,7 @@ export const tools: Tool<any, any>[] = [
       table_id: z.string().optional().describe(
         "Table ID: '1' (value added, default), '5' (contributions to GDP growth), '6' (% shares), '25' (real value added)",
       ),
-      frequency: z.string().optional().describe("'Q' quarterly (default) or 'A' annual"),
+      frequency: z.enum(["Q", "A"]).optional().describe("Frequency: Q=quarterly (default), A=annual"),
       year: z.string().optional().describe("Year(s): comma-separated or 'ALL'. Default: last 3 years"),
       industry: z.string().optional().describe(
         "'ALL' (default), or specific NAICS codes: '11' (agriculture), '21' (mining), '23' (construction), " +

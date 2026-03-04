@@ -178,7 +178,7 @@ export const analysisPrompts: InputPrompt<any, any>[] = [
       "BANKING: cfpb_complaint_aggregations filtered by state\n" +
       "DISASTERS: fema_disaster_declarations for disaster history\n" +
       "SAFETY: dol_osha_inspections for workplace safety in the state\n" +
-      "CRIME: fbi_crime_by_state for crime statistics\n\n" +
+      "CRIME: fbi_crime_summarized with state param for crime statistics\n\n" +
       "Calculate per-capita figures where possible. " +
       "Present a cohesive narrative with data from all available sources.",
   },
@@ -199,7 +199,7 @@ export const analysisPrompts: InputPrompt<any, any>[] = [
       "- hud_fair_market_rents — housing costs (2BR benchmark)\n" +
       "- cdc_places_health — obesity, diabetes, depression, smoking rates\n" +
       "- naep_compare_states — 4th/8th grade reading and math scores\n" +
-      "- fbi_crime_by_state — violent and property crime rates\n" +
+      "- fbi_crime_summarized — violent (V) and property (P) crime rates\n" +
       "- eia_electricity — electricity prices\n" +
       "- fema_disaster_declarations — disaster frequency\n" +
       "- usa_spending_by_state — federal dollars received\n\n" +
@@ -574,9 +574,12 @@ export const analysisPrompts: InputPrompt<any, any>[] = [
       return `Crime analysis: ${isNational ? "National" : state}${focus ? ` — focus on ${focus} crime` : ""}:\n\n` +
         "CRIME DATA:\n" +
         (isNational
-          ? "- fbi_crime_national — national crime estimates and trends\n"
-          : `- fbi_crime_by_state state='${state}' — state crime estimates\n`) +
-        `- fbi_arrest_data${!isNational ? ` state='${state}'` : ""} — arrest breakdowns\n\n` +
+          ? "- fbi_crime_summarized offense='V' — national violent crime trends\n" +
+            "- fbi_crime_summarized offense='P' — national property crime trends\n"
+          : `- fbi_crime_summarized offense='V' state='${state}' — state violent crime\n` +
+            `- fbi_crime_summarized offense='P' state='${state}' — state property crime\n`) +
+        `- fbi_arrest_data offense='all'${!isNational ? ` state='${state}'` : ""} — arrest breakdowns\n` +
+        `- fbi_hate_crime${!isNational ? ` state='${state}'` : ""} — hate crime incidents\n\n` +
         "CONTEXT:\n" +
         (!isNational
           ? `- census_population for ${state} — population (for per-capita rates)\n` +
