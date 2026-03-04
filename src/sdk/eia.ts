@@ -123,6 +123,7 @@ export async function getPetroleum(opts: {
   start?: string;
   end?: string;
   length?: number;
+  offset?: number;
 } = {}): Promise<EiaResponse> {
   const productMap: Record<string, string> = {
     crude: "/petroleum/pri/spt/data",
@@ -138,13 +139,18 @@ export async function getPetroleum(opts: {
     frequency: opts.frequency || "monthly",
     "data[0]": "value",
     start: opts.start || `${new Date().getFullYear() - 2}-01`,
-    length: opts.length || 60,
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
   };
 
   if (opts.end) params.end = opts.end;
+  if (opts.length) params.length = opts.length;
+  if (opts.offset) params.offset = opts.offset;
+
+  // Set correct facet based on product selection and route
   if (prod === "crude") params["facets[product][]"] = "EPCWTI";
+  else if (prod === "gasoline") params["facets[series][]"] = "EMM_EPMRU_PTE_NUS_DPG";
+  else if (prod === "diesel") params["facets[series][]"] = "EMD_EPD2D_PTE_NUS_DPG";
 
   return queryEia(route, params);
 }
@@ -156,17 +162,21 @@ export async function getElectricity(opts: {
   dataType?: string;
   frequency?: string;
   start?: string;
+  end?: string;
   length?: number;
+  offset?: number;
 } = {}): Promise<EiaResponse> {
   const params: Record<string, string | number | string[] | undefined> = {
     frequency: opts.frequency || "monthly",
     "data[0]": opts.dataType || "price",
     start: opts.start || `${new Date().getFullYear() - 2}-01`,
-    length: opts.length || 60,
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
   };
 
+  if (opts.end) params.end = opts.end;
+  if (opts.length) params.length = opts.length;
+  if (opts.offset) params.offset = opts.offset;
   if (opts.state) params["facets[stateid][]"] = opts.state.toUpperCase();
   if (opts.sector) params["facets[sectorid][]"] = opts.sector.toUpperCase();
 
@@ -178,17 +188,21 @@ export async function getNaturalGas(opts: {
   process?: string;
   frequency?: string;
   start?: string;
+  end?: string;
   length?: number;
+  offset?: number;
 } = {}): Promise<EiaResponse> {
   const params: Record<string, string | number | string[] | undefined> = {
     frequency: opts.frequency || "monthly",
     "data[0]": "value",
     start: opts.start || `${new Date().getFullYear() - 2}-01`,
-    length: opts.length || 60,
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
   };
 
+  if (opts.end) params.end = opts.end;
+  if (opts.length) params.length = opts.length;
+  if (opts.offset) params.offset = opts.offset;
   if (opts.process) params["facets[process][]"] = opts.process.toUpperCase();
 
   return queryEia("/natural-gas/pri/sum/data", params);
@@ -199,19 +213,23 @@ export async function getStateEnergy(opts: {
   state?: string;
   msn?: string;
   start?: string;
+  end?: string;
   length?: number;
+  offset?: number;
 } = {}): Promise<EiaResponse> {
   const params: Record<string, string | number | string[] | undefined> = {
     frequency: "annual",
     "data[0]": "value",
     start: opts.start || String(new Date().getFullYear() - 5),
-    length: opts.length || 60,
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
   };
 
+  if (opts.end) params.end = opts.end;
+  if (opts.length) params.length = opts.length;
+  if (opts.offset) params.offset = opts.offset;
   if (opts.state) params["facets[stateId][]"] = opts.state.toUpperCase();
-  params["facets[msn][]"] = (opts.msn || "TETCB").toUpperCase();
+  params["facets[seriesId][]"] = (opts.msn || "TETCB").toUpperCase();
 
   return queryEia("/seds/data", params);
 }
@@ -221,17 +239,21 @@ export async function getTotalEnergy(opts: {
   msn?: string;
   frequency?: string;
   start?: string;
+  end?: string;
   length?: number;
+  offset?: number;
 } = {}): Promise<EiaResponse> {
   const params: Record<string, string | number | string[] | undefined> = {
     frequency: opts.frequency || "monthly",
     "data[0]": "value",
     start: opts.start || `${new Date().getFullYear() - 2}-01`,
-    length: opts.length || 60,
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
   };
 
+  if (opts.end) params.end = opts.end;
+  if (opts.length) params.length = opts.length;
+  if (opts.offset) params.offset = opts.offset;
   if (opts.msn) params["facets[msn][]"] = opts.msn.toUpperCase();
 
   return queryEia("/total-energy/data", params);

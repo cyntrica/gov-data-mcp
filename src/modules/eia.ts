@@ -69,16 +69,17 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "EIA: Petroleum Prices", readOnlyHint: true },
     parameters: z.object({
       product: z.string().optional().describe(
-        "Product type: 'crude' (default — WTI+Brent), 'gasoline', 'diesel', 'all'. " +
+        "Product type: 'crude' (default — WTI), 'gasoline', 'diesel', 'all'. " +
         "Or a specific series ID like 'EPCWTI'",
       ),
       frequency: z.enum(["daily", "weekly", "monthly", "annual"]).optional().describe("Frequency (default: monthly)"),
       start: z.string().optional().describe("Start date (YYYY-MM or YYYY-MM-DD). Default: 2 years ago"),
-      end: z.string().optional().describe("End date. Default: latest available"),
-      length: z.number().int().optional().describe("Max rows to return (default: 60)"),
+      end: z.string().optional().describe("End date (YYYY-MM or YYYY-MM-DD). Default: latest available"),
+      length: z.number().int().max(5000).optional().describe("Max rows to return (API max: 5000). Omit to let date range control volume."),
+      offset: z.number().int().optional().describe("Row offset for pagination (use with length)"),
     }),
-    execute: async ({ product, frequency, start, end, length }) => {
-      const res = await getPetroleum({ product, frequency, start, end, length });
+    execute: async ({ product, frequency, start, end, length, offset }) => {
+      const res = await getPetroleum({ product, frequency, start, end, length, offset });
       const data = res.response?.data || [];
       const total = res.response?.total || data.length;
 
@@ -112,10 +113,12 @@ export const tools: Tool<any, any>[] = [
       data_type: z.enum(["price", "revenue", "sales", "customers"]).optional().describe("Data type (default: price in cents/kWh)"),
       frequency: z.enum(["monthly", "annual"]).optional().describe("Frequency (default: monthly)"),
       start: z.string().optional().describe("Start date (YYYY-MM or YYYY). Default: 2 years ago"),
-      length: z.number().int().optional().describe("Max rows (default: 60)"),
+      end: z.string().optional().describe("End date (YYYY-MM or YYYY). Default: latest available"),
+      length: z.number().int().max(5000).optional().describe("Max rows (API max: 5000). Omit to let date range control volume."),
+      offset: z.number().int().optional().describe("Row offset for pagination"),
     }),
-    execute: async ({ state, sector, data_type, frequency, start, length }) => {
-      const res = await getElectricity({ state, sector, dataType: data_type, frequency, start, length });
+    execute: async ({ state, sector, data_type, frequency, start, end, length, offset }) => {
+      const res = await getElectricity({ state, sector, dataType: data_type, frequency, start, end, length, offset });
       const data = res.response?.data || [];
 
       if (!data.length) return emptyResponse("No electricity data found.");
@@ -155,10 +158,12 @@ export const tools: Tool<any, any>[] = [
       ),
       frequency: z.enum(["monthly", "annual"]).optional().describe("Frequency (default: monthly)"),
       start: z.string().optional().describe("Start date (YYYY-MM). Default: 2 years ago"),
-      length: z.number().int().optional().describe("Max rows (default: 60)"),
+      end: z.string().optional().describe("End date (YYYY-MM). Default: latest available"),
+      length: z.number().int().max(5000).optional().describe("Max rows (API max: 5000). Omit to let date range control volume."),
+      offset: z.number().int().optional().describe("Row offset for pagination"),
     }),
-    execute: async ({ process, frequency, start, length }) => {
-      const res = await getNaturalGas({ process, frequency, start, length });
+    execute: async ({ process, frequency, start, end, length, offset }) => {
+      const res = await getNaturalGas({ process, frequency, start, end, length, offset });
       const data = res.response?.data || [];
 
       if (!data.length) return emptyResponse("No natural gas data found.");
@@ -199,10 +204,12 @@ export const tools: Tool<any, any>[] = [
         "'TEPRB' (production), 'RETCB' (renewables), 'PATCB' (petroleum)",
       ),
       start: z.string().optional().describe("Start year (YYYY). Default: 5 years ago"),
-      length: z.number().int().optional().describe("Max rows (default: 60)"),
+      end: z.string().optional().describe("End year (YYYY). Default: latest available"),
+      length: z.number().int().max(5000).optional().describe("Max rows (API max: 5000). Omit to let date range control volume."),
+      offset: z.number().int().optional().describe("Row offset for pagination"),
     }),
-    execute: async ({ state, msn, start, length }) => {
-      const res = await getStateEnergy({ state, msn, start, length });
+    execute: async ({ state, msn, start, end, length, offset }) => {
+      const res = await getStateEnergy({ state, msn, start, end, length, offset });
       const data = res.response?.data || [];
 
       if (!data.length) return emptyResponse("No state energy data found.");
@@ -246,10 +253,12 @@ export const tools: Tool<any, any>[] = [
       msn: z.string().optional().describe("MSN code to filter by. Omit for overview of major categories."),
       frequency: z.enum(["monthly", "annual"]).optional().describe("Frequency (default: monthly)"),
       start: z.string().optional().describe("Start date (YYYY-MM or YYYY). Default: 2 years ago"),
-      length: z.number().int().optional().describe("Max rows (default: 60)"),
+      end: z.string().optional().describe("End date (YYYY-MM or YYYY). Default: latest available"),
+      length: z.number().int().max(5000).optional().describe("Max rows (API max: 5000). Omit to let date range control volume."),
+      offset: z.number().int().optional().describe("Row offset for pagination"),
     }),
-    execute: async ({ msn, frequency, start, length }) => {
-      const res = await getTotalEnergy({ msn, frequency, start, length });
+    execute: async ({ msn, frequency, start, end, length, offset }) => {
+      const res = await getTotalEnergy({ msn, frequency, start, end, length, offset });
       const data = res.response?.data || [];
 
       if (!data.length) return emptyResponse("No total energy data found.");
