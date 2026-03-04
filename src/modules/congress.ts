@@ -22,6 +22,8 @@ import {
   getBillSubjects,
   getBillSummaries,
   getBillTextVersions,
+  getBillTitles,
+  getBillCosponsors,
   getMemberDetails,
   searchAmendments,
   getAmendmentDetails,
@@ -33,12 +35,17 @@ import {
   listTreaties,
   getTreatyDetails,
   searchCrsReports,
+  getCrsReportDetails,
+  searchSummaries,
+  getCongressInfo,
   getCongressionalRecord,
   currentCongress,
   billTypeToUrlSegment,
   BILL_TYPES,
   CHAMBERS,
   AMENDMENT_TYPES,
+  LAW_TYPES,
+  REPORT_TYPES,
   type CongressBill,
   type CongressMember,
   type CongressVoteSummary,
@@ -52,9 +59,12 @@ import {
   type CongressRelatedBill,
   type CongressSubject,
   type CongressSummary,
+  type CongressStandaloneSummary,
   type CongressTextVersion,
+  type CongressBillTitle,
   type CongressMemberDetail,
   type CongressCommittee,
+  type CongressInfo,
   type CongressNomination,
   type CongressTreaty,
   type CongressCrsReport,
@@ -74,6 +84,8 @@ export const reference = {
   billTypes: BILL_TYPES,
   chambers: CHAMBERS,
   amendmentTypes: AMENDMENT_TYPES,
+  lawTypes: LAW_TYPES,
+  reportTypes: REPORT_TYPES,
   congressNumbers: {
     119: "2025-2026", 118: "2023-2024", 117: "2021-2022",
     116: "2019-2020", 115: "2017-2018", 114: "2015-2016",
@@ -160,13 +172,16 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: Search Bills", readOnlyHint: true },
     parameters: z.object({
       query: z.string().optional().describe("Keyword/text search across bill titles and summaries (e.g., 'infrastructure', 'tax reform', 'climate')"),
-      congress: z.number().int().optional().describe("Congress number (e.g., 119 for 2025-2026, 118 for 2023-2024). Default: current"),
+      congress: z.number().int().optional().describe("Congress number (e.g., 119 for 2025-2026, 118 for 2023-2024). Omit to list bills across all congresses"),
       bill_type: z.enum(keysEnum(BILL_TYPES)).optional().describe("Bill type"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
       offset: z.number().int().optional().describe("Results offset for pagination (default: 0)"),
+      fromDateTime: z.string().optional().describe("Filter by update date from this timestamp. Format: YYYY-MM-DDT00:00:00Z"),
+      toDateTime: z.string().optional().describe("Filter by update date to this timestamp. Format: YYYY-MM-DDT00:00:00Z"),
+      sort: z.string().optional().describe("Sort order. Value can be updateDate+asc or updateDate+desc (default: updateDate+desc)"),
     }),
-    execute: async ({ query, congress, bill_type, limit, offset }) => {
-      const data = await searchBills({ query, congress, bill_type, limit, offset });
+    execute: async ({ query, congress, bill_type, limit, offset, fromDateTime, toDateTime, sort }) => {
+      const data = await searchBills({ query, congress, bill_type, limit, offset, fromDateTime, toDateTime, sort });
       const bills = data.bills;
       if (!bills.length) {
         return JSON.stringify({ summary: query ? `No bills found matching "${query}".` : "No bills found.", bills: [] });
@@ -220,16 +235,21 @@ export const tools: Tool<any, any>[] = [
   {
     name: "congress_search_members",
     description:
-      "Search for members of Congress by state, congress number, or get all current members.",
+      "Search for members of Congress by state, congress number, district, or get all current members. " +
+      "Supports: /member (all), /member/{stateCode} (by state), /member/{stateCode}/{district} (by district), " +
+      "/member/congress/{congress} (by congress), /member/congress/{congress}/{stateCode}/{district} (combined).",
     annotations: { title: "Congress: Search Members", readOnlyHint: true },
     parameters: z.object({
-      congress: z.number().int().optional().describe("Congress number (default: current)"),
-      state: z.string().optional().describe("Two-letter state code to filter by, e.g. 'CA', 'TX'"),
-      district: z.number().int().optional().describe("House district number (use with state)"),
+      congress: z.number().int().optional().describe("Congress number. When used with state+district, filters to that congress. Use alone to list all members of a congress."),
+      state: z.string().optional().describe("Two-letter state code to filter by, e.g. 'CA', 'TX'. Can be used alone or with district."),
+      district: z.number().int().optional().describe("House district number (use with state). Returns all historical members for that seat."),
+      currentMember: z.boolean().optional().describe("Filter by current member status. true = current members only, false = former only"),
+      fromDateTime: z.string().optional().describe("Filter by update date start (YYYY-MM-DDT00:00:00Z)"),
+      toDateTime: z.string().optional().describe("Filter by update date end (YYYY-MM-DDT00:00:00Z)"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 50)"),
     }),
-    execute: async ({ congress, state, district, limit }) => {
-      const data = await searchMembers({ congress, state, district, limit });
+    execute: async ({ congress, state, district, currentMember, fromDateTime, toDateTime, limit }) => {
+      const data = await searchMembers({ congress, state, district, currentMember, fromDateTime, toDateTime, limit });
       const members = data.members;
       if (!members.length) {
         return JSON.stringify({ summary: "No members found.", members: [] });
@@ -370,15 +390,16 @@ export const tools: Tool<any, any>[] = [
     name: "congress_recent_laws",
     description:
       "Get recently enacted laws (bills signed by the President). " +
-      "Shows what legislation has become law.",
+      "Optionally filter by law type (public or private). Shows what legislation has become law.",
     annotations: { title: "Congress: Recent Laws", readOnlyHint: true },
     parameters: z.object({
       congress: z.number().int().optional().describe("Congress number (default: current)"),
+      law_type: z.enum(keysEnum(LAW_TYPES)).optional().describe("Law type: pub (public law) or priv (private law). Default: all"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
     }),
-    execute: async ({ congress, limit }) => {
+    execute: async ({ congress, law_type, limit }) => {
       const congressNum = congress ?? currentCongress();
-      const data = await getRecentLaws({ congress, limit });
+      const data = await getRecentLaws({ congress, lawType: law_type, limit });
       const laws = data.laws;
       if (!laws.length) {
         return JSON.stringify({ summary: `No laws found for the ${congressNum}th Congress.`, laws: [] });
@@ -434,7 +455,7 @@ export const tools: Tool<any, any>[] = [
       limit: z.number().int().positive().max(250).optional().describe("Max actions to return (default: 100)"),
     }),
     execute: async ({ congress, bill_type, bill_number, limit }) => {
-      const data = await getBillActions(congress, billTypeToUrlSegment(bill_type), bill_number, limit ?? 100);
+      const data = await getBillActions(congress, bill_type, bill_number, limit ?? 100);
       if (!data.actions.length) {
         return JSON.stringify({ summary: `No actions found for ${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress).`, actions: [] });
       }
@@ -466,7 +487,7 @@ export const tools: Tool<any, any>[] = [
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 50)"),
     }),
     execute: async ({ congress, bill_type, bill_number, limit }) => {
-      const data = await getBillAmendments(congress, billTypeToUrlSegment(bill_type), bill_number, limit ?? 50);
+      const data = await getBillAmendments(congress, bill_type, bill_number, limit ?? 50);
       if (!data.amendments.length) {
         return JSON.stringify({ summary: `No amendments found for ${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress).`, amendments: [] });
       }
@@ -498,7 +519,7 @@ export const tools: Tool<any, any>[] = [
       bill_number: z.number().int().describe("Bill number"),
     }),
     execute: async ({ congress, bill_type, bill_number }) => {
-      const data = await getBillSummaries(congress, billTypeToUrlSegment(bill_type), bill_number);
+      const data = await getBillSummaries(congress, bill_type, bill_number);
       if (!data.summaries.length) {
         return JSON.stringify({ summary: `No CRS summaries available for ${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress).`, summaries: [] });
       }
@@ -527,7 +548,7 @@ export const tools: Tool<any, any>[] = [
       bill_number: z.number().int().describe("Bill number"),
     }),
     execute: async ({ congress, bill_type, bill_number }) => {
-      const data = await getBillTextVersions(congress, billTypeToUrlSegment(bill_type), bill_number);
+      const data = await getBillTextVersions(congress, bill_type, bill_number);
       if (!data.textVersions.length) {
         return JSON.stringify({ summary: `No text versions found for ${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress).`, textVersions: [] });
       }
@@ -555,7 +576,7 @@ export const tools: Tool<any, any>[] = [
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 50)"),
     }),
     execute: async ({ congress, bill_type, bill_number, limit }) => {
-      const data = await getBillRelatedBills(congress, billTypeToUrlSegment(bill_type), bill_number, limit ?? 50);
+      const data = await getBillRelatedBills(congress, bill_type, bill_number, limit ?? 50);
       if (!data.relatedBills.length) {
         return JSON.stringify({ summary: `No related bills found for ${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress).`, relatedBills: [] });
       }
@@ -586,7 +607,7 @@ export const tools: Tool<any, any>[] = [
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 100)"),
     }),
     execute: async ({ congress, bill_type, bill_number, limit }) => {
-      const data = await getBillSubjects(congress, billTypeToUrlSegment(bill_type), bill_number, limit ?? 100);
+      const data = await getBillSubjects(congress, bill_type, bill_number, limit ?? 100);
       return JSON.stringify({
         summary: `${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress): ${data.subjects.length} subjects${data.policyArea ? `, policy area: ${data.policyArea}` : ""}`,
         policyArea: data.policyArea ?? null,
@@ -607,7 +628,7 @@ export const tools: Tool<any, any>[] = [
       bill_number: z.number().int().describe("Bill number"),
     }),
     execute: async ({ congress, bill_type, bill_number }) => {
-      const data = await getBillCommittees(congress, billTypeToUrlSegment(bill_type), bill_number);
+      const data = await getBillCommittees(congress, bill_type, bill_number);
       if (!data.committees.length) {
         return JSON.stringify({ summary: `No committee data for ${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress).`, committees: [] });
       }
@@ -619,6 +640,79 @@ export const tools: Tool<any, any>[] = [
           chamber: c.chamber ?? null,
           type: c.type ?? null,
           activities: c.activities?.map(a => ({ name: a.name, date: a.date })) ?? null,
+        })),
+      });
+    },
+  },
+
+  {
+    name: "congress_bill_titles",
+    description:
+      "Get all titles for a bill — short titles, official titles, display titles, and titles as they appeared in different text versions. " +
+      "Useful for finding the popular name of legislation (e.g., 'Inflation Reduction Act').",
+    annotations: { title: "Congress: Bill Titles", readOnlyHint: true },
+    parameters: z.object({
+      congress: z.number().int().describe("Congress number"),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).describe("Bill type"),
+      bill_number: z.number().int().describe("Bill number"),
+      limit: z.number().int().positive().max(250).optional().describe("Max results (default: 100)"),
+    }),
+    execute: async ({ congress, bill_type, bill_number, limit }) => {
+      const data = await getBillTitles(congress, bill_type, bill_number, limit ?? 100);
+      if (!data.titles.length) {
+        return JSON.stringify({ summary: `No titles found for ${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress).`, titles: [] });
+      }
+      return JSON.stringify({
+        summary: `${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress): ${data.titles.length} titles`,
+        titles: data.titles.map(t => ({
+          title: t.title ?? null,
+          titleType: t.titleType ?? null,
+          titleTypeCode: t.titleTypeCode ?? null,
+          billTextVersionCode: t.billTextVersionCode ?? null,
+          billTextVersionName: t.billTextVersionName ?? null,
+          updateDate: t.updateDate ?? null,
+        })),
+      });
+    },
+  },
+
+  {
+    name: "congress_bill_cosponsors",
+    description:
+      "Get the full list of cosponsors for a bill with party affiliation and sponsorship dates. " +
+      "Returns individual cosponsor details unlike congress_bill_details which only provides a party breakdown summary.",
+    annotations: { title: "Congress: Bill Cosponsors", readOnlyHint: true },
+    parameters: z.object({
+      congress: z.number().int().describe("Congress number"),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).describe("Bill type"),
+      bill_number: z.number().int().describe("Bill number"),
+      limit: z.number().int().positive().max(250).optional().describe("Max results (default: 250)"),
+      sort: z.string().optional().describe("Sort order. Value can be updateDate+asc or updateDate+desc"),
+    }),
+    execute: async ({ congress, bill_type, bill_number, limit, sort }) => {
+      const data = await getBillCosponsors(congress, bill_type, bill_number, { limit, sort });
+      const cosponsors = data.cosponsors;
+      if (!cosponsors.length) {
+        return JSON.stringify({ summary: `No cosponsors found for ${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress).`, cosponsors: [] });
+      }
+      const partyBreakdown: Record<string, number> = {};
+      for (const c of cosponsors) {
+        const party = (c.party ?? "?") as string;
+        partyBreakdown[party] = (partyBreakdown[party] ?? 0) + 1;
+      }
+      return JSON.stringify({
+        summary: `${bill_type.toUpperCase()} ${bill_number} (${congress}th Congress): ${cosponsors.length} cosponsors`,
+        totalCosponsors: cosponsors.length,
+        partyBreakdown,
+        cosponsors: cosponsors.map((c: any) => ({
+          firstName: c.firstName ?? null,
+          lastName: c.lastName ?? null,
+          party: c.party ?? null,
+          state: c.state ?? null,
+          district: c.district ?? null,
+          bioguideId: c.bioguideId ?? c.bioguidId ?? null,
+          isOriginalCosponsor: c.isOriginalCosponsor ?? null,
+          sponsorshipDate: c.sponsorshipDate ?? null,
         })),
       });
     },
@@ -668,9 +762,11 @@ export const tools: Tool<any, any>[] = [
       congress: z.number().int().optional().describe("Congress number (e.g., 119). Default: current"),
       chamber: z.enum(keysEnum(CHAMBERS)).optional().describe("Chamber"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 50)"),
+      fromDateTime: z.string().optional().describe("Filter by update date from. Format: YYYY-MM-DDT00:00:00Z"),
+      toDateTime: z.string().optional().describe("Filter by update date to. Format: YYYY-MM-DDT00:00:00Z"),
     }),
-    execute: async ({ congress, chamber, limit }) => {
-      const data = await listCommittees({ congress, chamber, limit });
+    execute: async ({ congress, chamber, limit, fromDateTime, toDateTime }) => {
+      const data = await listCommittees({ congress, chamber, limit, fromDateTime, toDateTime });
       if (!data.committees.length) {
         return JSON.stringify({ summary: "No committees found matching criteria.", committees: [] });
       }
@@ -712,6 +808,37 @@ export const tools: Tool<any, any>[] = [
     },
   },
 
+  {
+    name: "congress_committee_details",
+    description:
+      "Get detailed information about a specific congressional committee by chamber and committee code. " +
+      "Returns full history, website URL, subcommittees, bill/report counts, and related communications.",
+    annotations: { title: "Congress: Committee Details", readOnlyHint: true },
+    parameters: z.object({
+      chamber: z.enum(keysEnum(CHAMBERS)).describe("Chamber"),
+      committee_code: z.string().describe("Committee system code (e.g., 'hspw00' for House Transportation, 'ssju00' for Senate Judiciary)"),
+    }),
+    execute: async ({ chamber, committee_code }) => {
+      const data = await getCommitteeDetails(chamber, committee_code);
+      const c = data.committee;
+      return JSON.stringify({
+        summary: `${c.name ?? committee_code} (${c.chamber ?? chamber})`,
+        systemCode: c.systemCode ?? committee_code,
+        name: c.name ?? null,
+        chamber: c.chamber ?? null,
+        type: c.type ?? null,
+        isCurrent: c.isCurrent ?? null,
+        committeeWebsiteUrl: c.committeeWebsiteUrl ?? null,
+        parent: c.parent ?? null,
+        subcommittees: c.subcommittees?.map(sc => ({ name: sc.name, systemCode: sc.systemCode })) ?? null,
+        history: c.history ?? null,
+        bills: c.bills ?? null,
+        reports: c.reports ?? null,
+        updateDate: c.updateDate ?? null,
+      });
+    },
+  },
+
   // ─── Amendments ──────────────────────────────────────────────────
 
   {
@@ -724,9 +851,11 @@ export const tools: Tool<any, any>[] = [
       congress: z.number().int().optional().describe("Congress number (default: current)"),
       amendment_type: z.enum(keysEnum(AMENDMENT_TYPES)).optional().describe("Amendment type"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
+      fromDateTime: z.string().optional().describe("Filter by update date from. Format: YYYY-MM-DDT00:00:00Z"),
+      toDateTime: z.string().optional().describe("Filter by update date to. Format: YYYY-MM-DDT00:00:00Z"),
     }),
-    execute: async ({ congress, amendment_type, limit }) => {
-      const data = await searchAmendments({ congress, amendmentType: amendment_type, limit });
+    execute: async ({ congress, amendment_type, limit, fromDateTime, toDateTime }) => {
+      const data = await searchAmendments({ congress, amendmentType: amendment_type, limit, fromDateTime, toDateTime });
       if (!data.amendments.length) {
         return JSON.stringify({ summary: "No amendments found.", amendments: [] });
       }
@@ -789,10 +918,12 @@ export const tools: Tool<any, any>[] = [
     parameters: z.object({
       congress: z.number().int().optional().describe("Congress number (default: current)"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
+      fromDateTime: z.string().optional().describe("Filter by update date from. Format: YYYY-MM-DDT00:00:00Z"),
+      toDateTime: z.string().optional().describe("Filter by update date to. Format: YYYY-MM-DDT00:00:00Z"),
     }),
-    execute: async ({ congress, limit }) => {
+    execute: async ({ congress, limit, fromDateTime, toDateTime }) => {
       const congressNum = congress ?? currentCongress();
-      const data = await listNominations({ congress, limit });
+      const data = await listNominations({ congress, limit, fromDateTime, toDateTime });
       if (!data.nominations.length) {
         return JSON.stringify({ summary: `No nominations found for ${congressNum}th Congress.`, nominations: [] });
       }
@@ -854,9 +985,11 @@ export const tools: Tool<any, any>[] = [
     parameters: z.object({
       congress: z.number().int().optional().describe("Congress number (default: all)"),
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
+      fromDateTime: z.string().optional().describe("Filter by update date from. Format: YYYY-MM-DDT00:00:00Z"),
+      toDateTime: z.string().optional().describe("Filter by update date to. Format: YYYY-MM-DDT00:00:00Z"),
     }),
-    execute: async ({ congress, limit }) => {
-      const data = await listTreaties({ congress, limit });
+    execute: async ({ congress, limit, fromDateTime, toDateTime }) => {
+      const data = await listTreaties({ congress, limit, fromDateTime, toDateTime });
       if (!data.treaties.length) {
         return JSON.stringify({ summary: "No treaties found.", treaties: [] });
       }
@@ -919,9 +1052,11 @@ export const tools: Tool<any, any>[] = [
     annotations: { title: "Congress: CRS Reports", readOnlyHint: true },
     parameters: z.object({
       limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
+      fromDateTime: z.string().optional().describe("Filter by update date from. Format: YYYY-MM-DDT00:00:00Z"),
+      toDateTime: z.string().optional().describe("Filter by update date to. Format: YYYY-MM-DDT00:00:00Z"),
     }),
-    execute: async ({ limit }) => {
-      const data = await searchCrsReports({ limit });
+    execute: async ({ limit, fromDateTime, toDateTime }) => {
+      const data = await searchCrsReports({ limit, fromDateTime, toDateTime });
       if (!data.reports.length) {
         return JSON.stringify({ summary: "No CRS reports found.", reports: [] });
       }
@@ -932,6 +1067,112 @@ export const tools: Tool<any, any>[] = [
           title: r.title ?? null,
           type: r.type ?? null,
           activeRecord: r.activeRecord ?? null,
+        })),
+      });
+    },
+  },
+
+  {
+    name: "congress_crs_report_details",
+    description:
+      "Get detailed information about a specific CRS report by report number/ID. " +
+      "Returns full summary, authors, topics, related legislation, and format links (PDF, etc.).",
+    annotations: { title: "Congress: CRS Report Details", readOnlyHint: true },
+    parameters: z.object({
+      report_number: z.string().describe("The report number or ID (e.g., 'R47175', 'RL33110', 'IF12345')"),
+    }),
+    execute: async ({ report_number }) => {
+      const data = await getCrsReportDetails(report_number);
+      const r = data.report;
+      return JSON.stringify({
+        header: `CRS Report ${report_number}: ${r.title ?? "No title"}`,
+        reportNumber: r.id ?? r.reportNumber ?? report_number,
+        title: r.title ?? null,
+        status: r.status ?? null,
+        contentType: r.contentType ?? r.type ?? null,
+        publishDate: r.publishDate ?? null,
+        updateDate: r.updateDate ?? null,
+        summary: r.summary ?? null,
+        authors: r.authors ?? null,
+        topics: r.topics ?? null,
+        formats: r.formats ?? null,
+        relatedMaterials: r.relatedMaterials ?? null,
+        url: r.url ?? null,
+      });
+    },
+  },
+
+  // ─── Summaries Search ────────────────────────────────────────────
+
+  {
+    name: "congress_summaries_search",
+    description:
+      "Search bill summaries across all bills and congresses. Unlike congress_bill_summaries (which requires a specific bill), " +
+      "this searches CRS summaries across the entire collection. Filter by congress, bill type, and date range. " +
+      "Sorted by last update date. Results include the associated bill reference.",
+    annotations: { title: "Congress: Search Summaries", readOnlyHint: true },
+    parameters: z.object({
+      congress: z.number().int().optional().describe("Congress number to filter by (omit for all congresses)"),
+      bill_type: z.enum(keysEnum(BILL_TYPES)).optional().describe("Bill type to filter by"),
+      limit: z.number().int().positive().max(250).optional().describe("Max results (default: 20)"),
+      fromDateTime: z.string().optional().describe("Filter by update date from. Format: YYYY-MM-DDT00:00:00Z"),
+      toDateTime: z.string().optional().describe("Filter by update date to. Format: YYYY-MM-DDT00:00:00Z"),
+      sort: z.string().optional().describe("Sort order: updateDate+asc or updateDate+desc"),
+    }),
+    execute: async ({ congress, bill_type, limit, fromDateTime, toDateTime, sort }) => {
+      const data = await searchSummaries({ congress, billType: bill_type, limit, fromDateTime, toDateTime, sort });
+      if (!data.summaries.length) {
+        return JSON.stringify({ summary: "No summaries found.", summaries: [] });
+      }
+      return JSON.stringify({
+        summary: `${data.summaries.length} bill summaries${congress ? ` (${congress}th Congress)` : ""}`,
+        summaries: data.summaries.map(s => ({
+          actionDate: s.actionDate ?? null,
+          actionDesc: s.actionDesc ?? null,
+          text: s.text ?? null,
+          updateDate: s.updateDate ?? null,
+          bill: s.bill ? {
+            congress: s.bill.congress ?? null,
+            type: s.bill.type ?? null,
+            number: s.bill.number ?? null,
+            title: s.bill.title ?? null,
+            url: s.bill.url ?? null,
+          } : null,
+          currentChamber: s.currentChamber ?? null,
+        })),
+      });
+    },
+  },
+
+  // ─── Congress Info ───────────────────────────────────────────────
+
+  {
+    name: "congress_info",
+    description:
+      "Get information about congresses and their sessions — start/end dates, session numbers, and chambers. " +
+      "Use to look up when a congress was in session, or get current congress details.",
+    annotations: { title: "Congress: Congress Info", readOnlyHint: true },
+    parameters: z.object({
+      congress: z.number().int().optional().describe("Specific congress number (e.g., 118). Omit to list recent congresses"),
+      current: z.boolean().optional().describe("Set true to get the current congress info"),
+      limit: z.number().int().positive().max(250).optional().describe("Max results when listing (default: 20)"),
+    }),
+    execute: async ({ congress, current, limit }) => {
+      const data = await getCongressInfo({ congress, current, limit });
+      if (!data.congresses.length) {
+        return JSON.stringify({ summary: "No congress data found.", congresses: [] });
+      }
+      return JSON.stringify({
+        summary: data.congresses.length === 1
+          ? `${data.congresses[0].name ?? `Congress #${congress}`}`
+          : `${data.congresses.length} congresses`,
+        congresses: data.congresses.map(c => ({
+          name: c.name ?? null,
+          number: c.number ?? null,
+          startYear: c.startYear ?? null,
+          endYear: c.endYear ?? null,
+          sessions: c.sessions ?? null,
+          url: c.url ?? null,
         })),
       });
     },
