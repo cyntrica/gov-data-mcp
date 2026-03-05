@@ -73,6 +73,14 @@ Full documentation at **[lzinga.github.io/us-gov-open-data-mcp](https://lzinga.g
 | **Demographics** | Census, HUD, FEMA |
 | **Other** | BTS, USDA NASS, USDA FoodData, World Bank |
 
+## Disclaimer
+
+This project integrates **30+ government APIs**, many of which have large, complex, or inconsistently documented schemas. AI is used as a tool throughout this project to help parse API documentation, generate type definitions, and scaffold tool implementations — making it possible to cover this much surface area and get people access to government data faster than would otherwise be feasible. While every effort has been made to ensure accuracy, some endpoints may return unexpected results, have incomplete parameter coverage, or behave differently than documented.
+
+This is a community-driven effort — if you find something that's broken or could be improved, **please open an issue or submit a PR**. Contributions that fix edge cases, improve schema accuracy, or expand coverage are especially welcome. The goal is to make U.S. government data as accessible and reliable as possible, together.
+
+All data is sourced from official U.S. government and international APIs — the server does not generate, modify, or editorialize any data.
+
 ## License
 
 MIT
