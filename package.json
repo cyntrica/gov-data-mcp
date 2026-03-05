@@ -8,20 +8,20 @@
   },
   "exports": {
     ".": "./dist/server.js",
-    "./client": "./dist/client.js",
-    "./sdk": "./dist/sdk/index.js",
-    "./sdk/*": "./dist/sdk/*.js"
+    "./client": "./dist/shared/client.js",
+    "./sdk": "./dist/apis/index.js",
+    "./sdk/*": "./dist/apis/*/sdk.js"
   },
   "typesVersions": {
     "*": {
       "client": [
-        "dist/client.d.ts"
+        "dist/shared/client.d.ts"
       ],
       "sdk": [
-        "dist/sdk/index.d.ts"
+        "dist/apis/index.d.ts"
       ],
       "sdk/*": [
-        "dist/sdk/*.d.ts"
+        "dist/apis/*/sdk.d.ts"
       ]
     }
   },
@@ -35,6 +35,11 @@
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
+    "docs:typedoc": "cd docs && npx typedoc",
+    "docs:generate": "node docs/scripts/generate.mjs",
+    "docs:dev": "npm run docs:generate && npm run docs:typedoc && vitepress dev docs",
+    "docs:build": "npm run docs:generate && npm run docs:typedoc && vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -107,7 +112,11 @@
   },
   "devDependencies": {
     "@types/node": "^25.3.0",
+    "typedoc": "^0.28.17",
+    "typedoc-plugin-markdown": "^4.10.0",
+    "typedoc-vitepress-theme": "^1.1.2",
     "typescript": "^5.9.3",
+    "vitepress": "^1.6.4",
     "vitest": "^4.0.18"
   }
 }

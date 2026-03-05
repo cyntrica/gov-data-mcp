@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * FastMCP server — auto-wires modules from named exports.
+ * FastMCP server — auto-discovers API modules from src/apis/{name}/ folders.
  *
- * Each module exports: name, displayName, description, auth?, workflow?, tips?, reference?, tools[]
+ * Each module folder exports: name, displayName, description, auth?, workflow?, tips?, reference?, tools[]
  * This file auto-registers tools, generates resources + instructions, and adds clear_cache.
  *
- * Adding a new API = create sdk/*.ts + modules/*.ts, import here, push to MODULES.
+ * Adding a new API = create an apis/{name}/ folder with sdk.ts, meta.ts, tools.ts, index.ts.
+ * No wiring needed — the server discovers it automatically.
  *
  * Supports:
  *   - stdio transport (default, for VS Code / Claude Desktop / Cursor)
@@ -20,50 +21,13 @@
  */
 
 import "dotenv/config";
+import { readdirSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { FastMCP, type Tool, type InputPrompt } from "fastmcp";
 import { z } from "zod";
-
-import * as fred from "./modules/fred.js";
-import * as bls from "./modules/bls.js";
-import * as bea from "./modules/bea.js";
-import * as eia from "./modules/eia.js";
-import * as census from "./modules/census.js";
-import * as fec from "./modules/fec.js";
-import * as congress from "./modules/congress.js";
-import * as federalRegister from "./modules/federal-register.js";
-import * as usaspending from "./modules/usaspending.js";
-import * as sec from "./modules/sec.js";
-import * as fbi from "./modules/fbi.js";
-import * as govinfo from "./modules/govinfo.js";
-import * as treasury from "./modules/treasury.js";
-import * as noaa from "./modules/noaa.js";
-import * as usdaNass from "./modules/usda-nass.js";
-import * as worldBank from "./modules/world-bank.js";
-import * as cdc from "./modules/cdc.js";
-import * as naep from "./modules/naep.js";
-import * as collegeScorecard from "./modules/college-scorecard.js";
-import * as nrel from "./modules/nrel.js";
-import * as fda from "./modules/fda.js";
-import * as epa from "./modules/epa.js";
-import * as senateLobbying from "./modules/senate-lobbying.js";
-import * as regulations from "./modules/regulations.js";
-import * as usdaFooddata from "./modules/usda-fooddata.js";
-import * as fema from "./modules/fema.js";
-import * as nhtsa from "./modules/nhtsa.js";
-import * as cms from "./modules/cms.js";
-import * as hud from "./modules/hud.js";
-import * as uspto from "./modules/uspto.js";
-import * as cfpb from "./modules/cfpb.js";
-import * as fdic from "./modules/fdic.js";
-import * as dol from "./modules/dol.js";
-import * as usgs from "./modules/usgs.js";
-import * as clinicalTrials from "./modules/clinical-trials.js";
-import * as bts from "./modules/bts.js";
-import * as openPayments from "./modules/open-payments.js";
-import * as nih from "./modules/nih.js";
-import * as dojNews from "./modules/doj-news.js";
-import { CROSS_REFERENCE_GUIDE } from "./instructions.js";
-import { analysisPrompts } from "./prompts.js";
+import { CROSS_REFERENCE_GUIDE } from "./server/instructions.js";
+import { analysisPrompts } from "./server/prompts.js";
 
 const logger = {
   ...console,
@@ -98,16 +62,24 @@ interface Module {
   clearCache?: () => void;
 }
 
-const MODULES: Module[] = [
-  treasury, fred, bls, bea, eia, census, fec,
-  congress, federalRegister, usaspending, sec, fbi, govinfo,
-  noaa, usdaNass, worldBank, cdc, naep, collegeScorecard,
-  nrel, fda, epa, senateLobbying, regulations, usdaFooddata,
-  fema, nhtsa, cms, hud, uspto,
-  cfpb, fdic, dol,
-  usgs, clinicalTrials, bts,
-  openPayments, nih, dojNews,
-];
+const MODULES: Module[] = [];
+
+// Auto-discover API modules from apis/ subdirectories
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const apisDir = join(__dirname, "apis");
+const apiDirs = readdirSync(apisDir, { withFileTypes: true })
+  .filter(d => d.isDirectory())
+  .map(d => d.name)
+  .sort();
+
+for (const dir of apiDirs) {
+  try {
+    const mod = await import(`./apis/${dir}/index.js`);
+    MODULES.push(mod as Module);
+  } catch (err) {
+    console.error(`Failed to load module "${dir}":`, (err as Error).message);
+  }
+}
 
 // ─── CLI arg + env parsing ───────────────────────────────────────────
 

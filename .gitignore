@@ -6,3 +6,13 @@ dist/
 *.log
 .playwright-mcp/
 .vscode/settings.json
+
+# VitePress / TypeDoc generated output
+docs/api/
+docs/index.md
+docs/guide/tools.md
+docs/guide/data-sources.md
+docs/guide/api-keys.md
+docs/generated-sidebar.json
+docs/.vitepress/dist/
+docs/.vitepress/cache/
