@@ -65,28 +65,84 @@ export interface ApiClient {
 }
 
 // ─── Token Bucket Rate Limiter ───────────────────────────────────────
+//
+// Queue-based token bucket that guarantees:
+//   - Correct rate limiting even under concurrent acquire() calls
+//   - FIFO fairness: callers are served in the order they arrive
+//   - No thundering-herd: a single drain loop releases waiters one at a time
+//   - Batch release: if multiple tokens accumulated while sleeping, all
+//     eligible waiters are released in one pass
+//
+// NOTE: "Token" here refers to the classic rate-limiting concept (permission
+// slips for API calls), NOT LLM/AI tokens. The name follows the standard
+// CS algorithm: https://en.wikipedia.org/wiki/Token_bucket
 
-class TokenBucket {
+export class TokenBucket {
   private tokens: number;
   private lastRefill: number;
+  private readonly queue: Array<() => void> = [];
+  private timer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private max: number, private rate: number) {
+  constructor(private readonly max: number, private readonly rate: number) {
     this.tokens = max;
     this.lastRefill = Date.now();
   }
 
-  async acquire(): Promise<void> {
+  /** Refill tokens based on elapsed time since the last refill. */
+  private refill(): void {
     const now = Date.now();
-    this.tokens = Math.min(this.max, this.tokens + ((now - this.lastRefill) / 1000) * this.rate);
+    this.tokens = Math.min(
+      this.max,
+      this.tokens + ((now - this.lastRefill) / 1000) * this.rate,
+    );
     this.lastRefill = now;
+  }
 
-    if (this.tokens >= 1) {
+  /** Wait until a token is available, respecting FIFO order. */
+  async acquire(): Promise<void> {
+    this.refill();
+
+    // Fast path: token available and nobody queued ahead of us
+    if (this.tokens >= 1 && this.queue.length === 0) {
       this.tokens -= 1;
       return;
     }
+
+    // Slow path: join the queue and wait for the drain loop to release us
+    return new Promise<void>(resolve => {
+      this.queue.push(resolve);
+      this.scheduleDrain();
+    });
+  }
+
+  /** Number of callers currently waiting for a token. */
+  get pending(): number {
+    return this.queue.length;
+  }
+
+  /** Ensure a drain timer is running to release queued callers. */
+  private scheduleDrain(): void {
+    if (this.timer !== null) return;
+
+    const drain = (): void => {
+      this.timer = null;
+      this.refill();
+
+      // Release as many queued callers as tokens allow
+      while (this.queue.length > 0 && this.tokens >= 1) {
+        this.tokens -= 1;
+        this.queue.shift()!();
+      }
+
+      // Reschedule if more waiters remain
+      if (this.queue.length > 0) {
+        const waitMs = Math.ceil(((1 - this.tokens) / this.rate) * 1000);
+        this.timer = setTimeout(drain, Math.max(waitMs, 1));
+      }
+    };
+
     const waitMs = Math.ceil(((1 - this.tokens) / this.rate) * 1000);
-    await new Promise(r => setTimeout(r, waitMs));
-    this.tokens = 0;
+    this.timer = setTimeout(drain, Math.max(waitMs, 1));
   }
 }
 
