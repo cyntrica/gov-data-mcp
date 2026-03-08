@@ -1,8 +1,8 @@
 // Auto-generates docs pages from compiled API modules.
-// Produces: guide/tools.md, guide/data-sources.md
-// Run: node docs/scripts/generate-tools-page.mjs
+// Produces: index.md, guide/tools.md, guide/data-sources.md, guide/api-keys.md, generated-sidebar.json
+// Run: npm run docs:generate
 
-import { readdirSync, writeFileSync } from "fs";
+import { readdirSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -10,6 +10,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "../..");
 const APIS_DIR = join(ROOT, "dist/apis");
 const GUIDE_DIR = join(__dirname, "../guide");
+
+if (!existsSync(APIS_DIR)) {
+  console.error("dist/apis not found — run `npm run build` first");
+  process.exit(1);
+}
 
 // ── Load all modules ──
 
@@ -44,8 +49,10 @@ for (const dir of apiDirs) {
 
 const totalTools = modules.reduce((n, m) => n + m.tools.length, 0);
 const totalPrompts = modules.reduce((n, m) => n + m.prompts.length, 0);
+const noKeyApis = modules.filter(m => !m.auth).map(m => m.displayName);
+const keyApis = modules.filter(m => m.auth);
 
-// ── 1. Generate tools.md ──
+// ── Helpers ──
 
 const CATEGORY_ORDER = [
   "Economic", "Legislative", "Financial", "Spending",
@@ -64,25 +71,46 @@ function groupByCategory(mods) {
   return groups;
 }
 
-const toolGroups = groupByCategory(modules);
+function slugify(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+/** Format auth for display: `KEY_NAME` or "None" */
+function fmtAuth(m) {
+  return m.auth ? `\`${[].concat(m.auth.envVar).join(", ")}\`` : "None";
+}
+
+/** Truncate at word boundary */
+function truncate(s, max = 120) {
+  if (s.length <= max) return s;
+  const cut = s.lastIndexOf(" ", max);
+  return s.slice(0, cut > 0 ? cut : max) + "...";
+}
+
+/** Escape pipe characters for markdown tables */
+function escPipe(s) {
+  return s.replace(/\|/g, "\\|");
+}
+
+const grouped = groupByCategory(modules);
+// ── 1. Generate tools.md ──
+
 const toolSections = [];
 
 for (const cat of CATEGORY_ORDER) {
-  const mods = toolGroups[cat];
+  const mods = grouped[cat];
   if (!mods?.length) continue;
 
-  const catTools = mods.reduce((n, m) => n + m.tools.length, 0);
   let section = `## ${cat}\n\n`;
 
   for (const m of mods) {
-    const auth = m.auth ? `\`${[].concat(m.auth.envVar).join(", ")}\`` : "None";
     const toolRows = m.tools.map(t => {
-      const desc = (t.description ?? "").split("\n")[0];
+      const desc = escPipe((t.description ?? "").split("\n")[0]);
       return `| \`${t.name}\` | ${desc} |`;
     });
 
     section += `### ${m.displayName}\n\n`;
-    section += `**${m.tools.length} tools** · Auth: ${auth}\n\n`;
+    section += `**${m.tools.length} tools** · Auth: ${fmtAuth(m)}\n\n`;
     section += `| Tool | Description |\n|------|-------------|\n`;
     section += toolRows.join("\n");
 
@@ -110,11 +138,10 @@ console.log(`tools.md: ${totalTools} tools, ${totalPrompts} prompts`);
 
 // ── 2. Generate data-sources.md ──
 
-const dsGroups = groupByCategory(modules);
 const dsSections = [];
 
 for (const cat of CATEGORY_ORDER) {
-  const mods = dsGroups[cat];
+  const mods = grouped[cat];
   if (!mods?.length) continue;
 
   let section = `## ${cat}\n\n`;
@@ -122,16 +149,12 @@ for (const cat of CATEGORY_ORDER) {
   section += `|-----|-------|-------------|------|\n`;
 
   for (const m of mods) {
-    const auth = m.auth ? `\`${[].concat(m.auth.envVar).join(", ")}\`` : "None";
-    const desc = m.description.length > 120 ? m.description.slice(0, 117) + "..." : m.description;
-    section += `| **${m.displayName}** | ${m.tools.length} | ${desc} | ${auth} |\n`;
+    const desc = escPipe(truncate(m.description));
+    section += `| **${m.displayName}** | ${m.tools.length} | ${desc} | ${fmtAuth(m)} |\n`;
   }
 
   dsSections.push(section);
 }
-
-const noKeyApis = modules.filter(m => !m.auth).map(m => m.displayName);
-const keyApis = modules.filter(m => m.auth);
 
 const dataSourcesPage = `---
 # Auto-generated — do not edit. Run: npm run docs:generate
@@ -164,14 +187,10 @@ console.log(`data-sources.md: ${modules.length} APIs in ${dsSections.length} cat
 
 // ── 3. Generate sidebar fragments ──
 
-function slugify(text) {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
-
 // Tools sidebar: category → anchor links with tool count badge
 const toolsSidebar = [];
 for (const cat of CATEGORY_ORDER) {
-  const mods = toolGroups[cat];
+  const mods = grouped[cat];
   if (!mods?.length) continue;
   const catTools = mods.reduce((n, m) => n + m.tools.length, 0);
   toolsSidebar.push({
@@ -183,7 +202,7 @@ for (const cat of CATEGORY_ORDER) {
 // Data sources sidebar: category → anchor links with API count badge
 const dsSidebar = [];
 for (const cat of CATEGORY_ORDER) {
-  const mods = dsGroups[cat];
+  const mods = grouped[cat];
   if (!mods?.length) continue;
   dsSidebar.push({
     text: `<span style="display:flex;justify-content:space-between;width:100%">${cat}<span class="VPBadge tip">${mods.length}</span></span>`,
