@@ -108,7 +108,7 @@ async function fetchRawText(url: string): Promise<string | null> {
 }
 
 /** Strip HTML wrapper tags and normalize whitespace. GovInfo bill text is pre-formatted
- *  inside <html><body><pre>...</pre></body></html>, so this just removes those tags. */
+ *  inside `<html><body><pre>...</pre></body></html>`, so this just removes those tags. */
 function stripHtml(html: string): string {
   return html
     .replace(/<[^>]+>/g, "")
@@ -177,7 +177,7 @@ export async function getPackageGranules(packageId: string, pageSize = 5): Promi
  * Get the full text of a bill or enacted law.
  *
  * GovInfo serves bill text as pre-formatted plain text wrapped in minimal HTML
- * (<html><body><pre>). Download links live under `meta.download`, not at the
+ * (`<html><body><pre>`). Download links live under `meta.download`, not at the
  * top-level metadata. We try the htm link first (pre-formatted text), then
  * fall back to granules for older/uncommon packages.
  */
