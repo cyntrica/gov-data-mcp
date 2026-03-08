@@ -9,7 +9,7 @@
  *   const filings = await searchFilings({ registrant_name: "Pfizer", filing_year: 2025 });
  */
 
-import { createClient } from "../../shared/client.js";
+import { createClient, qp } from "../../shared/client.js";
 
 const api = createClient({
   baseUrl: "https://lda.gov/api/v1",
@@ -156,15 +156,15 @@ export async function searchFilings(opts: {
   page_size?: number;
   page?: number;
 }): Promise<LdaPaginated<LdaFiling>> {
-  const params: Record<string, string | number | undefined> = {
+  const params = qp({
     page_size: opts.page_size || 20,
-  };
-  if (opts.filing_year) params.filing_year = opts.filing_year;
-  if (opts.filing_type) params.filing_type = opts.filing_type;
-  if (opts.registrant_name) params.registrant_name = opts.registrant_name;
-  if (opts.client_name) params.client_name = opts.client_name;
-  if (opts.issue_code) params.filing_lobbying_activities__general_issue_code = opts.issue_code;
-  if (opts.page) params.page = opts.page;
+    filing_year: opts.filing_year,
+    filing_type: opts.filing_type,
+    registrant_name: opts.registrant_name,
+    client_name: opts.client_name,
+    filing_lobbying_activities__general_issue_code: opts.issue_code,
+    page: opts.page,
+  });
 
   return api.get<LdaPaginated<LdaFiling>>("/filings/", params);
 }
@@ -181,12 +181,12 @@ export async function searchContributions(opts: {
   lobbyist_name?: string;
   page_size?: number;
 }): Promise<LdaPaginated<LdaContribution>> {
-  const params: Record<string, string | number | undefined> = {
+  const params = qp({
     page_size: opts.page_size || 20,
-  };
-  if (opts.filing_year) params.filing_year = opts.filing_year;
-  if (opts.registrant_name) params.registrant_name = opts.registrant_name;
-  if (opts.lobbyist_name) params.lobbyist_name = opts.lobbyist_name;
+    filing_year: opts.filing_year,
+    registrant_name: opts.registrant_name,
+    lobbyist_name: opts.lobbyist_name,
+  });
 
   return api.get<LdaPaginated<LdaContribution>>("/contributions/", params);
 }
@@ -196,10 +196,10 @@ export async function searchRegistrants(opts: {
   registrant_name?: string;
   page_size?: number;
 }): Promise<LdaPaginated<LdaRegistrant>> {
-  const params: Record<string, string | number | undefined> = {
+  const params = qp({
     page_size: opts.page_size || 20,
-  };
-  if (opts.registrant_name) params.registrant_name = opts.registrant_name;
+    registrant_name: opts.registrant_name,
+  });
 
   return api.get<LdaPaginated<LdaRegistrant>>("/registrants/", params);
 }
@@ -209,10 +209,10 @@ export async function searchClients(opts: {
   client_name?: string;
   page_size?: number;
 }): Promise<LdaPaginated<LdaClient>> {
-  const params: Record<string, string | number | undefined> = {
+  const params = qp({
     page_size: opts.page_size || 20,
-  };
-  if (opts.client_name) params.client_name = opts.client_name;
+    client_name: opts.client_name,
+  });
 
   return api.get<LdaPaginated<LdaClient>>("/clients/", params);
 }
@@ -224,12 +224,12 @@ export async function searchLobbyists(opts: {
   page_size?: number;
   page?: number;
 }): Promise<LdaPaginated<{ id: number; prefix?: string; first_name?: string; last_name?: string; suffix?: string; registrant?: { name: string }; [key: string]: unknown }>> {
-  const params: Record<string, string | number | undefined> = {
+  const params = qp({
     page_size: opts.page_size || 20,
-  };
-  if (opts.lobbyist_name) params.lobbyist_name = opts.lobbyist_name;
-  if (opts.registrant_name) params.registrant_name = opts.registrant_name;
-  if (opts.page) params.page = opts.page;
+    lobbyist_name: opts.lobbyist_name,
+    registrant_name: opts.registrant_name,
+    page: opts.page,
+  });
 
   return api.get("/lobbyists/", params);
 }

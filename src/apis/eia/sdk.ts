@@ -8,7 +8,7 @@
  * Requires EIA_API_KEY env var — register at https://www.eia.gov/opendata/register.php
  */
 
-import { createClient } from "../../shared/client.js";
+import { createClient, qp } from "../../shared/client.js";
 
 // ─── Client ──────────────────────────────────────────────────────────
 
@@ -139,17 +139,16 @@ export async function getPetroleum(opts: {
   const prod = (opts.product || "crude").toLowerCase();
   const route = productMap[prod] || "/petroleum/pri/spt/data";
 
-  const params: Record<string, string | number | string[] | undefined> = {
+  const params = qp({
     frequency: opts.frequency || "monthly",
     "data[0]": "value",
     start: opts.start || `${new Date().getFullYear() - 2}-01`,
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
-  };
-
-  if (opts.end) params.end = opts.end;
-  if (opts.length) params.length = opts.length;
-  if (opts.offset) params.offset = opts.offset;
+    end: opts.end,
+    length: opts.length,
+    offset: opts.offset,
+  });
 
   // Set correct facet based on product selection and route
   if (prod === "crude") params["facets[product][]"] = "EPCWTI";
@@ -170,19 +169,18 @@ export async function getElectricity(opts: {
   length?: number;
   offset?: number;
 } = {}): Promise<EiaResponse> {
-  const params: Record<string, string | number | string[] | undefined> = {
+  const params = qp({
     frequency: opts.frequency || "monthly",
     "data[0]": opts.dataType || "price",
     start: opts.start || `${new Date().getFullYear() - 2}-01`,
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
-  };
-
-  if (opts.end) params.end = opts.end;
-  if (opts.length) params.length = opts.length;
-  if (opts.offset) params.offset = opts.offset;
-  if (opts.state) params["facets[stateid][]"] = opts.state.toUpperCase();
-  if (opts.sector) params["facets[sectorid][]"] = opts.sector.toUpperCase();
+    end: opts.end,
+    length: opts.length,
+    offset: opts.offset,
+    "facets[stateid][]": opts.state?.toUpperCase(),
+    "facets[sectorid][]": opts.sector?.toUpperCase(),
+  });
 
   return queryEia("/electricity/retail-sales/data", params);
 }
@@ -196,18 +194,17 @@ export async function getNaturalGas(opts: {
   length?: number;
   offset?: number;
 } = {}): Promise<EiaResponse> {
-  const params: Record<string, string | number | string[] | undefined> = {
+  const params = qp({
     frequency: opts.frequency || "monthly",
     "data[0]": "value",
     start: opts.start || `${new Date().getFullYear() - 2}-01`,
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
-  };
-
-  if (opts.end) params.end = opts.end;
-  if (opts.length) params.length = opts.length;
-  if (opts.offset) params.offset = opts.offset;
-  if (opts.process) params["facets[process][]"] = opts.process.toUpperCase();
+    end: opts.end,
+    length: opts.length,
+    offset: opts.offset,
+    "facets[process][]": opts.process?.toUpperCase(),
+  });
 
   return queryEia("/natural-gas/pri/sum/data", params);
 }
@@ -221,19 +218,18 @@ export async function getStateEnergy(opts: {
   length?: number;
   offset?: number;
 } = {}): Promise<EiaResponse> {
-  const params: Record<string, string | number | string[] | undefined> = {
+  const params = qp({
     frequency: "annual",
     "data[0]": "value",
     start: opts.start || String(new Date().getFullYear() - 5),
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
-  };
-
-  if (opts.end) params.end = opts.end;
-  if (opts.length) params.length = opts.length;
-  if (opts.offset) params.offset = opts.offset;
-  if (opts.state) params["facets[stateId][]"] = opts.state.toUpperCase();
-  params["facets[seriesId][]"] = (opts.msn || "TETCB").toUpperCase();
+    end: opts.end,
+    length: opts.length,
+    offset: opts.offset,
+    "facets[stateId][]": opts.state?.toUpperCase(),
+    "facets[seriesId][]": (opts.msn || "TETCB").toUpperCase(),
+  });
 
   return queryEia("/seds/data", params);
 }
@@ -247,18 +243,17 @@ export async function getTotalEnergy(opts: {
   length?: number;
   offset?: number;
 } = {}): Promise<EiaResponse> {
-  const params: Record<string, string | number | string[] | undefined> = {
+  const params = qp({
     frequency: opts.frequency || "monthly",
     "data[0]": "value",
     start: opts.start || `${new Date().getFullYear() - 2}-01`,
     "sort[0][column]": "period",
     "sort[0][direction]": "desc",
-  };
-
-  if (opts.end) params.end = opts.end;
-  if (opts.length) params.length = opts.length;
-  if (opts.offset) params.offset = opts.offset;
-  if (opts.msn) params["facets[msn][]"] = opts.msn.toUpperCase();
+    end: opts.end,
+    length: opts.length,
+    offset: opts.offset,
+    "facets[msn][]": opts.msn?.toUpperCase(),
+  });
 
   return queryEia("/total-energy/data", params);
 }

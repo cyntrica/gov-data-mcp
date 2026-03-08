@@ -13,7 +13,7 @@
  * Docs: https://banks.data.fdic.gov/docs/
  */
 
-import { createClient } from "../../shared/client.js";
+import { createClient, qp } from "../../shared/client.js";
 
 // ─── Client ──────────────────────────────────────────────────────────
 
@@ -212,21 +212,7 @@ async function queryEndpoint<T>(
     agg_limit?: number;
   } = {},
 ): Promise<FdicApiResponse<T>> {
-  const params: Record<string, string | number | undefined> = {};
-
-  if (opts.filters) params.filters = opts.filters;
-  if (opts.fields) params.fields = opts.fields;
-  if (opts.sort_by) params.sort_by = opts.sort_by;
-  if (opts.sort_order) params.sort_order = opts.sort_order;
-  if (opts.limit !== undefined) params.limit = opts.limit;
-  if (opts.offset !== undefined) params.offset = opts.offset;
-  if (opts.search) params.search = opts.search;
-  if (opts.agg_by) params.agg_by = opts.agg_by;
-  if (opts.agg_term_fields) params.agg_term_fields = opts.agg_term_fields;
-  if (opts.agg_sum_fields) params.agg_sum_fields = opts.agg_sum_fields;
-  if (opts.agg_limit !== undefined) params.agg_limit = opts.agg_limit;
-
-  return client.get<FdicApiResponse<T>>(`/${endpoint}`, params);
+  return client.get<FdicApiResponse<T>>(`/${endpoint}`, qp(opts));
 }
 
 // ─── Public API ──────────────────────────────────────────────────────

@@ -107,19 +107,17 @@ async function fetchRawText(url: string): Promise<string | null> {
   }
 }
 
-/** Strip HTML tags and normalize whitespace. */
+/** Strip HTML wrapper tags and normalize whitespace. GovInfo bill text is pre-formatted
+ *  inside <html><body><pre>...</pre></body></html>, so this just removes those tags. */
 function stripHtml(html: string): string {
   return html
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<[^>]+>/g, " ")
+    .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/\s+/g, " ")
     .trim();
 }
 
@@ -177,7 +175,11 @@ export async function getPackageGranules(packageId: string, pageSize = 5): Promi
 
 /**
  * Get the full text of a bill or enacted law.
- * Multi-step: metadata → HTML link → text link → granules fallback → HTML stripping.
+ *
+ * GovInfo serves bill text as pre-formatted plain text wrapped in minimal HTML
+ * (<html><body><pre>). Download links live under `meta.download`, not at the
+ * top-level metadata. We try the htm link first (pre-formatted text), then
+ * fall back to granules for older/uncommon packages.
  */
 export async function getBillText(opts: {
   congress: number;
@@ -189,35 +191,32 @@ export async function getBillText(opts: {
   const ver = opts.version || "enr";
   const packageId = `BILLS-${opts.congress}${opts.billType.toLowerCase()}${opts.billNumber}${ver}`;
 
-  // Step 1: get metadata
   const meta = await getPackageSummary(packageId);
+  const download = (meta.download ?? {}) as Record<string, unknown>;
 
   let text = "";
   let textSource = "";
 
-  // Step 2: try HTML, then plain text
-  if (meta.htmlLink) {
-    const html = await fetchRawText(meta.htmlLink as string);
-    if (html) { text = stripHtml(html); textSource = "HTML"; }
+  // Primary: the htm link is pre-formatted text inside <pre> tags
+  const htmLink = download.txtLink ?? download.htmlLink ?? meta.htmlLink ?? meta.txtLink;
+  if (htmLink) {
+    const raw = await fetchRawText(htmLink as string);
+    if (raw) { text = stripHtml(raw); textSource = "GovInfo text"; }
   }
 
-  if (!text && meta.txtLink) {
-    const txt = await fetchRawText(meta.txtLink as string);
-    if (txt) { text = txt; textSource = "Plain text"; }
-  }
-
-  // Step 3: fallback to granules
+  // Fallback: try granule-level text for packages without a top-level download
   if (!text) {
     const granules = await getPackageGranules(packageId, 5);
     for (const g of granules) {
-      if (g.htmlLink) {
-        const html = await fetchRawText(g.htmlLink as string);
-        if (html) { text = stripHtml(html); textSource = "Granule HTML"; break; }
+      const gLink = (g as Record<string, unknown>).htmlLink ?? (g as Record<string, unknown>).txtLink;
+      if (gLink) {
+        const raw = await fetchRawText(gLink as string);
+        if (raw) { text = stripHtml(raw); textSource = "GovInfo granule"; break; }
       }
     }
   }
 
-  const maxLen = opts.maxLength || 15000;
+  const maxLen = opts.maxLength === 0 ? Infinity : (opts.maxLength || 100_000);
   const truncated = text.length > maxLen;
 
   return {

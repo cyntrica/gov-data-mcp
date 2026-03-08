@@ -64,6 +64,29 @@ export interface ClientConfig {
 export type ParamValue = string | number | string[] | undefined;
 export type Params = Record<string, ParamValue>;
 
+/**
+ * Shorthand for building query param objects. Drops `undefined`, `null`, and `""`.
+ * Booleans become `"true"`/`"false"`. Arrays pass through (for repeated keys like `facets[series][]`).
+ *
+ * @example
+ *   const { fromDateTime, toDateTime } = opts;
+ *   const params = qp({ limit: opts.limit ?? 20, fromDateTime, toDateTime });
+ *
+ *   // rename a key + set a default
+ *   const params = qp({ limit: 50, p_zip: opts.zip, sort: opts.sort ?? "desc" });
+ */
+export function qp(
+  obj: Record<string, string | number | boolean | string[] | undefined | null>,
+): Params {
+  const out: Params = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === undefined || v === null || v === "") continue;
+    if (typeof v === "boolean") { out[k] = String(v); continue; }
+    out[k] = v;
+  }
+  return out;
+}
+
 export interface ApiClient {
   get<T = unknown>(path: string, params?: Params): Promise<T>;
   post<T = unknown>(path: string, body?: Record<string, unknown>, params?: Params): Promise<T>;

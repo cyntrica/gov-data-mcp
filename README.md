@@ -10,7 +10,7 @@
 
 250+ tools covering economic, fiscal, health, education, energy, environment, lobbying, housing, patents, safety, banking, consumer protection, workplace safety, transportation, seismic, clinical trials, pharma payments, research funding, procurement, and legislative data.
 
-**21 APIs require no key** · The rest use free keys that take under a minute to get
+**22 APIs require no key** · The rest use free keys that take under a minute to get
 
 [Getting Started](https://lzinga.github.io/us-gov-open-data-mcp/guide/getting-started) · [API Reference](https://lzinga.github.io/us-gov-open-data-mcp/api/) · [Documentation](https://lzinga.github.io/us-gov-open-data-mcp/)
 

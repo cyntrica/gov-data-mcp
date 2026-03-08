@@ -8,7 +8,21 @@
  * Requires DATA_GOV_API_KEY env var. Get one at https://api.data.gov/signup/
  */
 
-import { createClient } from "../../shared/client.js";
+import { createClient, qp } from "../../shared/client.js";
+export * from "./types.js";
+import type {
+  CongressBill, CongressBillDetail, CongressCosponsor, CongressBillTitle,
+  CongressLaw, CongressSponsoredBill, CongressRelatedBill,
+  CongressAction, CongressSubject, CongressSummary, CongressStandaloneSummary,
+  CongressTextVersion, CongressMember, CongressMemberDetail,
+  CongressVoteSummary, CongressVoteMember, SenateVoteSummary, SenateVoteMember,
+  CongressAmendment, CongressCommitteeRef, CongressCommittee,
+  CongressCommitteeReport, CongressCommitteePrint, CongressCommitteeMeeting,
+  CongressHearing, CongressNomination, CongressTreaty, CongressCrsReport,
+  CongressCongressionalRecord, CongressDailyCongressionalRecord,
+  CongressBoundCongressionalRecord, CongressHouseCommunication,
+  CongressHouseRequirement, CongressSenateCommunication, CongressInfo,
+} from "./types.js";
 
 // ─── Client ──────────────────────────────────────────────────────────
 
@@ -23,324 +37,6 @@ const api = createClient({
   rateLimit: { perSecond: 5, burst: 10 },
   cacheTtlMs: 30 * 60 * 1000, // 30 min
 });
-
-// ─── Types ───────────────────────────────────────────────────────────
-
-/** Congress Bill. */
-export interface CongressBill {
-  type?: string;
-  number?: number;
-  title?: string;
-  congress?: number;
-  introducedDate?: string;
-  url?: string;
-  sponsor?: { name?: string; party?: string; state?: string };
-  latestAction?: { text?: string; actionDate?: string };
-  [key: string]: unknown;
-}
-
-/** Congress Bill Detail. */
-export interface CongressBillDetail {
-  type?: string;
-  number?: number;
-  title?: string;
-  congress?: number;
-  introducedDate?: string;
-  sponsors?: { firstName?: string; lastName?: string; party?: string; state?: string }[];
-  latestAction?: { text?: string; actionDate?: string };
-  laws?: { type?: string; number?: string }[];
-  policyArea?: { name?: string };
-  [key: string]: unknown;
-}
-
-/** Congress Cosponsor. */
-export interface CongressCosponsor {
-  bioguideId?: string;
-  /** Some endpoints spell it bioguidId (missing 'e') */
-  bioguidId?: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  party?: string;
-  state?: string;
-  district?: number;
-  isOriginalCosponsor?: boolean;
-  sponsorshipDate?: string;
-  url?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Member. */
-export interface CongressMember {
-  name?: string;
-  firstName?: string;
-  lastName?: string;
-  party?: string;
-  partyName?: string;
-  state?: string;
-  chamber?: string;
-  district?: number;
-  bioguideId?: string;
-  startYear?: number;
-  endYear?: number;
-  terms?: unknown;
-  [key: string]: unknown;
-}
-
-/** Congress Vote Summary. */
-export interface CongressVoteSummary {
-  rollCallNumber?: number;
-  voteNumber?: number;
-  date?: string;
-  startDate?: string;
-  question?: string;
-  voteQuestion?: string;
-  result?: string;
-  description?: string;
-  legislationNumber?: string;
-  legislationType?: string;
-  legislationUrl?: string;
-  voteType?: string;
-  votePartyTotal?: { voteParty: string; yeaTotal: number; nayTotal: number; notVotingTotal: number; presentTotal: number }[];
-  bill?: { type?: string; number?: number; title?: string };
-  [key: string]: unknown;
-}
-
-/** Congress Vote Member. */
-export interface CongressVoteMember {
-  bioguideID?: string;
-  firstName?: string;
-  lastName?: string;
-  voteParty?: string;
-  voteCast?: string;
-  voteState?: string;
-  /** Mapped from voteParty for convenience */
-  party?: string;
-  /** Mapped from voteCast for convenience */
-  votePosition?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Law. */
-export interface CongressLaw {
-  type?: string;
-  number?: number;
-  title?: string;
-  latestAction?: { actionDate?: string; text?: string };
-  url?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Sponsored Bill. */
-export interface CongressSponsoredBill {
-  type?: string;
-  number?: number;
-  title?: string;
-  congress?: number;
-  introducedDate?: string;
-  latestAction?: { text?: string; actionDate?: string };
-  [key: string]: unknown;
-}
-
-// ─── New types for expanded endpoints ────────────────────────────────
-
-/** Congress Action. */
-export interface CongressAction {
-  actionDate?: string;
-  text?: string;
-  type?: string;
-  actionCode?: string;
-  sourceSystem?: { code?: number; name?: string };
-  committees?: { systemCode?: string; name?: string; url?: string }[];
-  recordedVotes?: { rollNumber?: number; url?: string; chamber?: string; congress?: number; date?: string; sessionNumber?: number }[];
-  [key: string]: unknown;
-}
-
-/** Congress Amendment. */
-export interface CongressAmendment {
-  number?: number | string;
-  type?: string;
-  congress?: number;
-  description?: string;
-  purpose?: string;
-  latestAction?: { text?: string; actionDate?: string };
-  sponsor?: { firstName?: string; lastName?: string; party?: string; state?: string; bioguideId?: string };
-  url?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Committee Ref. */
-export interface CongressCommitteeRef {
-  systemCode?: string;
-  name?: string;
-  chamber?: string;
-  type?: string;
-  url?: string;
-  activities?: { name?: string; date?: string }[];
-  [key: string]: unknown;
-}
-
-/** Congress Related Bill. */
-export interface CongressRelatedBill {
-  type?: string;
-  number?: number;
-  congress?: number;
-  title?: string;
-  relationshipDetails?: { type?: string; identifiedBy?: string }[];
-  latestAction?: { text?: string; actionDate?: string };
-  url?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Subject. */
-export interface CongressSubject {
-  name?: string;
-  updateDate?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Summary. */
-export interface CongressSummary {
-  versionCode?: string;
-  actionDate?: string;
-  actionDesc?: string;
-  text?: string;
-  updateDate?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Text Version. */
-export interface CongressTextVersion {
-  date?: string;
-  type?: string;
-  url?: string;
-  formats?: { type?: string; url?: string }[];
-  [key: string]: unknown;
-}
-
-/** Congress Member Detail. */
-export interface CongressMemberDetail {
-  bioguideId?: string;
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  directOrderName?: string;
-  invertedOrderName?: string;
-  honorificName?: string;
-  birthYear?: string;
-  deathYear?: string;
-  party?: string;
-  state?: string;
-  district?: number;
-  partyHistory?: { partyName?: string; startYear?: number; endYear?: number }[];
-  terms?: { chamber?: string; congress?: number; startYear?: number; endYear?: number; memberType?: string; stateCode?: string; stateName?: string; district?: number }[];
-  depiction?: { imageUrl?: string; attribution?: string };
-  currentMember?: boolean;
-  officialWebsiteUrl?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Committee. */
-export interface CongressCommittee {
-  systemCode?: string;
-  name?: string;
-  chamber?: string;
-  type?: string;
-  committeeTypeCode?: string;
-  parent?: { systemCode?: string; name?: string; url?: string };
-  subcommittees?: { systemCode?: string; name?: string; url?: string }[];
-  url?: string;
-  isCurrent?: boolean;
-  committeeWebsiteUrl?: string;
-  history?: { libraryOfCongressName?: string; officialName?: string; startDate?: string; endDate?: string; updateDate?: string }[];
-  bills?: { count?: number; url?: string };
-  reports?: { count?: number; url?: string };
-  communications?: { count?: number; url?: string };
-  updateDate?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Nomination. */
-export interface CongressNomination {
-  number?: number | string;
-  congress?: number;
-  description?: string;
-  receivedDate?: string;
-  organization?: string;
-  nominees?: { firstName?: string; lastName?: string; state?: string; position?: string }[];
-  latestAction?: { text?: string; actionDate?: string };
-  url?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Treaty. */
-export interface CongressTreaty {
-  number?: number | string;
-  suffix?: string;
-  congress?: number;
-  congressReceived?: number;
-  topic?: string;
-  transmittedDate?: string;
-  inForceDate?: string;
-  resolutionText?: string;
-  latestAction?: { text?: string; actionDate?: string };
-  url?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Crs Report. */
-export interface CongressCrsReport {
-  /** Report ID (e.g. 'R47175') — returned as `id` by detail endpoint */
-  id?: string;
-  /** Report number — same as id but used in list context */
-  reportNumber?: string;
-  title?: string;
-  /** Content type (e.g. 'Reports') */
-  contentType?: string;
-  /** 'Active' or 'Archived' */
-  status?: string;
-  type?: string;
-  activeRecord?: boolean;
-  publishDate?: string;
-  updateDate?: string;
-  version?: number;
-  /** Plain-text CRS summary of the report */
-  summary?: string;
-  authors?: { author?: string }[];
-  topics?: { topic?: string }[];
-  formats?: { format?: string; url?: string }[];
-  relatedMaterials?: {
-    URL?: string;
-    congress?: number;
-    number?: string;
-    title?: string;
-    type?: string;
-  }[];
-  url?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Congressional Record. */
-export interface CongressCongressionalRecord {
-  issueNumber?: string;
-  volumeNumber?: string;
-  issueDate?: string;
-  congress?: number;
-  sessionNumber?: number;
-  url?: string;
-  [key: string]: unknown;
-}
-
-/** Congress Bill Title. */
-export interface CongressBillTitle {
-  title?: string;
-  titleType?: string;
-  titleTypeCode?: number;
-  updateDate?: string;
-  billTextVersionCode?: string;
-  billTextVersionName?: string;
-  [key: string]: unknown;
-}
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
@@ -442,13 +138,13 @@ export async function searchBills(opts: {
   // Fetch more if we need to filter client-side
   const fetchLimit = opts.query ? Math.min((opts.limit ?? 20) * 5, 250) : (opts.limit ?? 20);
 
-  const params: Record<string, string | number> = {
+  const params = qp({
     limit: fetchLimit,
     offset: opts.offset ?? 0,
     sort: opts.sort ?? "updateDate+desc",
-  };
-  if (opts.fromDateTime) params.fromDateTime = opts.fromDateTime;
-  if (opts.toDateTime) params.toDateTime = opts.toDateTime;
+    fromDateTime: opts.fromDateTime,
+    toDateTime: opts.toDateTime,
+  });
 
   const res = await api.get<{ bills?: CongressBill[] }>(path, params);
 
@@ -531,10 +227,12 @@ export async function searchMembers(opts: {
     path = `/member`;
   }
 
-  const params: Record<string, string | number> = { limit: opts.limit ?? 50 };
-  if (opts.currentMember !== undefined) params.currentMember = String(opts.currentMember);
-  if (opts.fromDateTime) params.fromDateTime = opts.fromDateTime;
-  if (opts.toDateTime) params.toDateTime = opts.toDateTime;
+  const params = qp({
+    limit: opts.limit ?? 50,
+    currentMember: opts.currentMember,
+    fromDateTime: opts.fromDateTime,
+    toDateTime: opts.toDateTime,
+  });
 
   const res = await api.get<{ members?: CongressMember[] }>(path, params);
   return { members: res.members ?? [] };
@@ -932,8 +630,7 @@ export async function getBillCosponsors(
   congress: number, billType: string, billNumber: number,
   opts: { limit?: number; sort?: string } = {},
 ): Promise<{ cosponsors: CongressCosponsor[] }> {
-  const params: Record<string, string | number> = { limit: opts.limit ?? 250 };
-  if (opts.sort) params.sort = opts.sort;
+  const params = qp({ limit: opts.limit ?? 250, sort: opts.sort });
   const res = await api.get<{ cosponsors?: CongressCosponsor[] }>(
     `/bill/${congress}/${billType.toLowerCase()}/${billNumber}/cosponsors`,
     params,
@@ -966,9 +663,7 @@ export async function searchAmendments(opts: {
     path += `/${opts.congress}`;
     if (opts.amendmentType) path += `/${opts.amendmentType.toLowerCase()}`;
   }
-  const params: Record<string, string | number> = { limit: opts.limit ?? 20 };
-  if (opts.fromDateTime) params.fromDateTime = opts.fromDateTime;
-  if (opts.toDateTime) params.toDateTime = opts.toDateTime;
+  const params = qp({ limit: opts.limit ?? 20, fromDateTime: opts.fromDateTime, toDateTime: opts.toDateTime });
   const res = await api.get<{ amendments?: CongressAmendment[] }>(path, params);
   return { amendments: res.amendments ?? [] };
 }
@@ -1011,9 +706,7 @@ export async function listCommittees(opts: {
   if (opts.chamber) {
     path += `/${opts.chamber.toLowerCase()}`;
   }
-  const params: Record<string, string | number> = { limit: opts.limit ?? 50 };
-  if (opts.fromDateTime) params.fromDateTime = opts.fromDateTime;
-  if (opts.toDateTime) params.toDateTime = opts.toDateTime;
+  const params = qp({ limit: opts.limit ?? 50, fromDateTime: opts.fromDateTime, toDateTime: opts.toDateTime });
   const res = await api.get<{ committees?: CongressCommittee[] }>(path, params);
   return { committees: res.committees ?? [] };
 }
@@ -1049,9 +742,7 @@ export async function listNominations(opts: {
   toDateTime?: string;
 } = {}): Promise<{ nominations: CongressNomination[] }> {
   const congressNum = opts.congress ?? currentCongress();
-  const params: Record<string, string | number> = { limit: opts.limit ?? 20 };
-  if (opts.fromDateTime) params.fromDateTime = opts.fromDateTime;
-  if (opts.toDateTime) params.toDateTime = opts.toDateTime;
+  const params = qp({ limit: opts.limit ?? 20, fromDateTime: opts.fromDateTime, toDateTime: opts.toDateTime });
   const res = await api.get<{ nominations?: CongressNomination[] }>(  
     `/nomination/${congressNum}`, params,
   );
@@ -1089,9 +780,7 @@ export async function listTreaties(opts: {
 } = {}): Promise<{ treaties: CongressTreaty[] }> {
   let path = "/treaty";
   if (opts.congress) path += `/${opts.congress}`;
-  const params: Record<string, string | number> = { limit: opts.limit ?? 20 };
-  if (opts.fromDateTime) params.fromDateTime = opts.fromDateTime;
-  if (opts.toDateTime) params.toDateTime = opts.toDateTime;
+  const params = qp({ limit: opts.limit ?? 20, fromDateTime: opts.fromDateTime, toDateTime: opts.toDateTime });
   const res = await api.get<{ treaties?: CongressTreaty[] }>(path, params);
   return { treaties: res.treaties ?? [] };
 }
@@ -1124,9 +813,7 @@ export async function searchCrsReports(opts: {
   fromDateTime?: string;
   toDateTime?: string;
 } = {}): Promise<{ reports: CongressCrsReport[] }> {
-  const params: Record<string, string | number> = { limit: opts.limit ?? 20 };
-  if (opts.fromDateTime) params.fromDateTime = opts.fromDateTime;
-  if (opts.toDateTime) params.toDateTime = opts.toDateTime;
+  const params = qp({ limit: opts.limit ?? 20, fromDateTime: opts.fromDateTime, toDateTime: opts.toDateTime });
   const res = await api.get<{ CRSReports?: CongressCrsReport[]; reports?: CongressCrsReport[] }>(  
     "/crsreport", params,
   );
@@ -1144,22 +831,6 @@ export async function getCrsReportDetails(
 }
 
 // ─── Summaries (standalone) ──────────────────────────────────────────
-
-/** Standalone summary from the /summaries endpoint (includes bill reference). */
-export interface CongressStandaloneSummary extends CongressSummary {
-  bill?: {
-    congress?: number;
-    number?: string;
-    originChamber?: string;
-    originChamberCode?: string;
-    title?: string;
-    type?: string;
-    url?: string;
-  };
-  currentChamber?: string;
-  currentChamberCode?: string;
-  lastSummaryUpdateDate?: string;
-}
 
 /**
  * Search bill summaries across congresses.
@@ -1179,27 +850,12 @@ export async function searchSummaries(opts: {
     path += `/${opts.congress}`;
     if (opts.billType) path += `/${opts.billType.toLowerCase()}`;
   }
-  const params: Record<string, string | number> = { limit: opts.limit ?? 20 };
-  if (opts.fromDateTime) params.fromDateTime = opts.fromDateTime;
-  if (opts.toDateTime) params.toDateTime = opts.toDateTime;
-  if (opts.sort) params.sort = opts.sort;
+  const params = qp({ limit: opts.limit ?? 20, fromDateTime: opts.fromDateTime, toDateTime: opts.toDateTime, sort: opts.sort });
   const res = await api.get<{ summaries?: CongressStandaloneSummary[] }>(path, params);
   return { summaries: res.summaries ?? [] };
 }
 
 // ─── Congress Info ───────────────────────────────────────────────────
-
-/** Congress session info. */
-export interface CongressInfo {
-  name?: string;
-  startYear?: string;
-  endYear?: string;
-  number?: number;
-  sessions?: { chamber?: string; number?: number; startDate?: string; endDate?: string }[];
-  url?: string;
-  updateDate?: string;
-  [key: string]: unknown;
-}
 
 /** Get info about congresses and their sessions. */
 export async function getCongressInfo(opts: {
@@ -1230,16 +886,669 @@ export async function getCongressionalRecord(opts: {
   day?: number;
   limit?: number;
 } = {}): Promise<{ issues: CongressCongressionalRecord[] }> {
-  const params: Record<string, string | number> = { limit: opts.limit ?? 20 };
-  if (opts.year) params.y = opts.year;
-  if (opts.month) params.m = opts.month;
-  if (opts.day) params.d = opts.day;
+  const params = qp({ limit: opts.limit ?? 20, y: opts.year, m: opts.month, d: opts.day });
   const res = await api.get<{
     Results?: { Issues?: CongressCongressionalRecord[] };
     congressionalRecord?: CongressCongressionalRecord[];
     issues?: CongressCongressionalRecord[];
   }>("/congressional-record", params);
   return { issues: res.Results?.Issues ?? res.congressionalRecord ?? res.issues ?? [] };
+}
+
+// ─── Law Details ─────────────────────────────────────────────────────
+
+/** Get details about a specific law by congress, type, and number. */
+export async function getLawDetails(
+  congress: number, lawType: string, lawNumber: number,
+): Promise<{ law: CongressBillDetail }> {
+  const res = await api.get<{ bill?: CongressBillDetail }>(
+    `/law/${congress}/${lawType.toLowerCase()}/${lawNumber}`,
+  );
+  return { law: res.bill ?? (res as unknown as CongressBillDetail) };
+}
+
+// ─── Amendment Sub-resources ─────────────────────────────────────────
+
+/** Get cosponsors of an amendment. */
+export async function getAmendmentCosponsors(
+  congress: number, amendmentType: string, amendmentNumber: number | string, limit = 250,
+): Promise<{ cosponsors: CongressCosponsor[] }> {
+  const res = await api.get<{ cosponsors?: CongressCosponsor[] }>(
+    `/amendment/${congress}/${amendmentType.toLowerCase()}/${amendmentNumber}/cosponsors`,
+    { limit },
+  );
+  return { cosponsors: res.cosponsors ?? [] };
+}
+
+/** Get sub-amendments to an amendment. */
+export async function getAmendmentAmendments(
+  congress: number, amendmentType: string, amendmentNumber: number | string, limit = 50,
+): Promise<{ amendments: CongressAmendment[] }> {
+  const res = await api.get<{ amendments?: CongressAmendment[] }>(
+    `/amendment/${congress}/${amendmentType.toLowerCase()}/${amendmentNumber}/amendments`,
+    { limit },
+  );
+  return { amendments: res.amendments ?? [] };
+}
+
+/** Get text versions of an amendment (117th Congress onwards). */
+export async function getAmendmentText(
+  congress: number, amendmentType: string, amendmentNumber: number | string, limit = 50,
+): Promise<{ textVersions: CongressTextVersion[] }> {
+  const res = await api.get<{ textVersions?: CongressTextVersion[] }>(
+    `/amendment/${congress}/${amendmentType.toLowerCase()}/${amendmentNumber}/text`,
+    { limit },
+  );
+  return { textVersions: res.textVersions ?? [] };
+}
+
+// ─── Committee Sub-resources ─────────────────────────────────────────
+
+/** Get committee details filtered by congress. */
+export async function getCommitteeDetailsByCongress(
+  congress: number, chamber: string, committeeCode: string,
+): Promise<{ committee: CongressCommittee }> {
+  const res = await api.get<{ committee?: CongressCommittee }>(
+    `/committee/${congress}/${chamber.toLowerCase()}/${committeeCode}`,
+  );
+  return { committee: res.committee ?? (res as unknown as CongressCommittee) };
+}
+
+/** Get reports associated with a committee. */
+export async function getCommitteeReportsForCommittee(
+  chamber: string, committeeCode: string, limit = 20,
+  opts: { fromDateTime?: string; toDateTime?: string } = {},
+): Promise<{ reports: CongressCommitteeReport[] }> {
+  const params = qp({ limit, fromDateTime: opts.fromDateTime, toDateTime: opts.toDateTime });
+  const res = await api.get<{ "committee-reports"?: { committeeReports?: CongressCommitteeReport[] }; committeeReports?: CongressCommitteeReport[] }>(
+    `/committee/${chamber.toLowerCase()}/${committeeCode}/reports`, params,
+  );
+  return { reports: res["committee-reports"]?.committeeReports ?? res.committeeReports ?? [] };
+}
+
+/** Get nominations associated with a committee. */
+export async function getCommitteeNominations(
+  chamber: string, committeeCode: string, limit = 20,
+): Promise<{ nominations: CongressNomination[] }> {
+  const res = await api.get<{ nominations?: CongressNomination[] }>(
+    `/committee/${chamber.toLowerCase()}/${committeeCode}/nominations`, { limit },
+  );
+  return { nominations: res.nominations ?? [] };
+}
+
+/** Get House communications associated with a committee. */
+export async function getCommitteeHouseCommunications(
+  committeeCode: string, limit = 20,
+): Promise<{ communications: CongressHouseCommunication[] }> {
+  const res = await api.get<{ houseCommunications?: CongressHouseCommunication[] }>(
+    `/committee/house/${committeeCode}/house-communication`, { limit },
+  );
+  return { communications: res.houseCommunications ?? [] };
+}
+
+/** Get Senate communications associated with a committee. */
+export async function getCommitteeSenateCommunications(
+  committeeCode: string, limit = 20,
+): Promise<{ communications: CongressSenateCommunication[] }> {
+  const res = await api.get<{ senateCommunications?: CongressSenateCommunication[] }>(
+    `/committee/senate/${committeeCode}/senate-communication`, { limit },
+  );
+  return { communications: res.senateCommunications ?? [] };
+}
+
+// ─── Committee Reports ───────────────────────────────────────────────
+
+/** List committee reports. */
+export async function listCommitteeReports(opts: {
+  congress?: number;
+  reportType?: string;
+  conference?: boolean;
+  limit?: number;
+  fromDateTime?: string;
+  toDateTime?: string;
+} = {}): Promise<{ reports: CongressCommitteeReport[] }> {
+  let path = "/committee-report";
+  if (opts.congress) {
+    path += `/${opts.congress}`;
+    if (opts.reportType) path += `/${opts.reportType.toLowerCase()}`;
+  }
+  const params = qp({ limit: opts.limit ?? 20, conference: opts.conference, fromDateTime: opts.fromDateTime, toDateTime: opts.toDateTime });
+  const res = await api.get<{ committeeReports?: CongressCommitteeReport[] }>(path, params);
+  return { reports: res.committeeReports ?? [] };
+}
+
+/** Get details about a specific committee report. */
+export async function getCommitteeReportDetails(
+  congress: number, reportType: string, reportNumber: number,
+): Promise<{ report: CongressCommitteeReport }> {
+  const res = await api.get<{ committeeReports?: CongressCommitteeReport[] }>(
+    `/committee-report/${congress}/${reportType.toLowerCase()}/${reportNumber}`,
+  );
+  const reports = res.committeeReports ?? [];
+  return { report: reports[0] ?? (res as unknown as CongressCommitteeReport) };
+}
+
+/** Get text versions for a committee report. */
+export async function getCommitteeReportText(
+  congress: number, reportType: string, reportNumber: number, limit = 20,
+): Promise<{ text: { type?: string; url?: string; isErrata?: string }[] }> {
+  const res = await api.get<{ text?: { type?: string; url?: string; isErrata?: string }[] }>(
+    `/committee-report/${congress}/${reportType.toLowerCase()}/${reportNumber}/text`, { limit },
+  );
+  return { text: res.text ?? [] };
+}
+
+// ─── Committee Prints ────────────────────────────────────────────────
+
+/** List committee prints. */
+export async function listCommitteePrints(opts: {
+  congress?: number;
+  chamber?: string;
+  limit?: number;
+  fromDateTime?: string;
+  toDateTime?: string;
+} = {}): Promise<{ prints: CongressCommitteePrint[] }> {
+  let path = "/committee-print";
+  if (opts.congress) {
+    path += `/${opts.congress}`;
+    if (opts.chamber) path += `/${opts.chamber.toLowerCase()}`;
+  }
+  const params = qp({ limit: opts.limit ?? 20, fromDateTime: opts.fromDateTime, toDateTime: opts.toDateTime });
+  const res = await api.get<{ committeePrints?: CongressCommitteePrint[] }>(path, params);
+  return { prints: res.committeePrints ?? [] };
+}
+
+/** Get details about a specific committee print. */
+export async function getCommitteePrintDetails(
+  congress: number, chamber: string, jacketNumber: number,
+): Promise<{ print: CongressCommitteePrint }> {
+  const res = await api.get<{ committeePrint?: CongressCommitteePrint }>(
+    `/committee-print/${congress}/${chamber.toLowerCase()}/${jacketNumber}`,
+  );
+  return { print: res.committeePrint ?? (res as unknown as CongressCommitteePrint) };
+}
+
+// ─── Committee Meetings ──────────────────────────────────────────────
+
+/** List committee meetings. */
+export async function listCommitteeMeetings(opts: {
+  congress?: number;
+  chamber?: string;
+  limit?: number;
+  fromDateTime?: string;
+  toDateTime?: string;
+} = {}): Promise<{ meetings: CongressCommitteeMeeting[] }> {
+  let path = "/committee-meeting";
+  if (opts.congress) {
+    path += `/${opts.congress}`;
+    if (opts.chamber) path += `/${opts.chamber.toLowerCase()}`;
+  }
+  const params = qp({ limit: opts.limit ?? 20, fromDateTime: opts.fromDateTime, toDateTime: opts.toDateTime });
+  const res = await api.get<{ committeeMeetings?: CongressCommitteeMeeting[] }>(path, params);
+  return { meetings: res.committeeMeetings ?? [] };
+}
+
+/** Get details about a specific committee meeting. */
+export async function getCommitteeMeetingDetails(
+  congress: number, chamber: string, eventId: string,
+): Promise<{ meeting: CongressCommitteeMeeting }> {
+  const res = await api.get<{ committeeMeeting?: CongressCommitteeMeeting }>(
+    `/committee-meeting/${congress}/${chamber.toLowerCase()}/${eventId}`,
+  );
+  return { meeting: res.committeeMeeting ?? (res as unknown as CongressCommitteeMeeting) };
+}
+
+// ─── Hearings ────────────────────────────────────────────────────────
+
+/** List hearings. */
+export async function listHearings(opts: {
+  congress?: number;
+  chamber?: string;
+  limit?: number;
+} = {}): Promise<{ hearings: CongressHearing[] }> {
+  let path = "/hearing";
+  if (opts.congress) {
+    path += `/${opts.congress}`;
+    if (opts.chamber) path += `/${opts.chamber.toLowerCase()}`;
+  }
+  const res = await api.get<{ hearings?: CongressHearing[] }>(path, { limit: opts.limit ?? 20 });
+  return { hearings: res.hearings ?? [] };
+}
+
+/** Get details about a specific hearing. */
+export async function getHearingDetails(
+  congress: number, chamber: string, jacketNumber: number,
+): Promise<{ hearing: CongressHearing }> {
+  const res = await api.get<{ hearing?: CongressHearing }>(
+    `/hearing/${congress}/${chamber.toLowerCase()}/${jacketNumber}`,
+  );
+  return { hearing: res.hearing ?? (res as unknown as CongressHearing) };
+}
+
+// ─── Daily Congressional Record ──────────────────────────────────────
+
+/** List daily Congressional Record issues. */
+export async function getDailyCongressionalRecord(opts: {
+  volumeNumber?: number;
+  issueNumber?: number;
+  limit?: number;
+} = {}): Promise<{ issues: CongressDailyCongressionalRecord[]; issue?: CongressDailyCongressionalRecord }> {
+  if (opts.volumeNumber && opts.issueNumber) {
+    const res = await api.get<{ issue?: CongressDailyCongressionalRecord }>(
+      `/daily-congressional-record/${opts.volumeNumber}/${opts.issueNumber}`,
+    );
+    return { issues: [], issue: res.issue ?? (res as unknown as CongressDailyCongressionalRecord) };
+  }
+  let path = "/daily-congressional-record";
+  if (opts.volumeNumber) path += `/${opts.volumeNumber}`;
+  const res = await api.get<{ dailyCongressionalRecord?: CongressDailyCongressionalRecord[] }>(
+    path, { limit: opts.limit ?? 20 },
+  );
+  return { issues: res.dailyCongressionalRecord ?? [] };
+}
+
+/** Get articles from a daily Congressional Record issue. */
+export async function getDailyCongressionalRecordArticles(
+  volumeNumber: number, issueNumber: number, limit = 50,
+): Promise<{ articles: { name?: string; sectionArticles?: { startPage?: string; endPage?: string; title?: string; text?: { type?: string; url?: string }[] }[] }[] }> {
+  const res = await api.get<{ articles?: unknown[] }>(
+    `/daily-congressional-record/${volumeNumber}/${issueNumber}/articles`, { limit },
+  );
+  return { articles: (res.articles ?? []) as any[] };
+}
+
+// ─── Bound Congressional Record ──────────────────────────────────────
+
+/** List bound Congressional Record issues. */
+export async function getBoundCongressionalRecord(opts: {
+  year?: number;
+  month?: number;
+  day?: number;
+  limit?: number;
+} = {}): Promise<{ records: CongressBoundCongressionalRecord[] }> {
+  let path = "/bound-congressional-record";
+  if (opts.year) {
+    path += `/${opts.year}`;
+    if (opts.month) {
+      path += `/${opts.month}`;
+      if (opts.day) path += `/${opts.day}`;
+    }
+  }
+  const res = await api.get<{ boundCongressionalRecord?: CongressBoundCongressionalRecord[] }>(
+    path, { limit: opts.limit ?? 20 },
+  );
+  return { records: res.boundCongressionalRecord ?? [] };
+}
+
+// ─── House Communications ────────────────────────────────────────────
+
+/** List House communications. */
+export async function listHouseCommunications(opts: {
+  congress?: number;
+  communicationType?: string;
+  limit?: number;
+} = {}): Promise<{ communications: CongressHouseCommunication[] }> {
+  let path = "/house-communication";
+  if (opts.congress) {
+    path += `/${opts.congress}`;
+    if (opts.communicationType) path += `/${opts.communicationType.toLowerCase()}`;
+  }
+  const res = await api.get<{ houseCommunications?: CongressHouseCommunication[] }>(path, { limit: opts.limit ?? 20 });
+  return { communications: res.houseCommunications ?? [] };
+}
+
+/** Get details about a specific House communication. */
+export async function getHouseCommunicationDetails(
+  congress: number, communicationType: string, communicationNumber: number,
+): Promise<{ communication: CongressHouseCommunication }> {
+  const res = await api.get<{ houseCommunication?: CongressHouseCommunication }>(
+    `/house-communication/${congress}/${communicationType.toLowerCase()}/${communicationNumber}`,
+  );
+  return { communication: res.houseCommunication ?? (res as unknown as CongressHouseCommunication) };
+}
+
+// ─── House Requirements ──────────────────────────────────────────────
+
+/** List House requirements. */
+export async function listHouseRequirements(opts: {
+  limit?: number;
+} = {}): Promise<{ requirements: CongressHouseRequirement[] }> {
+  const res = await api.get<{ houseRequirements?: CongressHouseRequirement[] }>(
+    "/house-requirement", { limit: opts.limit ?? 20 },
+  );
+  return { requirements: res.houseRequirements ?? [] };
+}
+
+/** Get details about a specific House requirement. */
+export async function getHouseRequirementDetails(
+  requirementNumber: number,
+): Promise<{ requirement: CongressHouseRequirement }> {
+  const res = await api.get<{ houseRequirement?: CongressHouseRequirement }>(
+    `/house-requirement/${requirementNumber}`,
+  );
+  return { requirement: res.houseRequirement ?? (res as unknown as CongressHouseRequirement) };
+}
+
+/** Get matching communications for a House requirement. */
+export async function getHouseRequirementMatchingCommunications(
+  requirementNumber: number, limit = 20,
+): Promise<{ communications: CongressHouseCommunication[] }> {
+  const res = await api.get<{ matchingCommunications?: CongressHouseCommunication[] }>(
+    `/house-requirement/${requirementNumber}/matching-communications`, { limit },
+  );
+  return { communications: res.matchingCommunications ?? [] };
+}
+
+// ─── Senate Communications ───────────────────────────────────────────
+
+/** List Senate communications. */
+export async function listSenateCommunications(opts: {
+  congress?: number;
+  communicationType?: string;
+  limit?: number;
+} = {}): Promise<{ communications: CongressSenateCommunication[] }> {
+  let path = "/senate-communication";
+  if (opts.congress) {
+    path += `/${opts.congress}`;
+    if (opts.communicationType) path += `/${opts.communicationType.toLowerCase()}`;
+  }
+  const res = await api.get<{ senateCommunications?: CongressSenateCommunication[] }>(path, { limit: opts.limit ?? 20 });
+  return { communications: res.senateCommunications ?? [] };
+}
+
+/** Get details about a specific Senate communication. */
+export async function getSenateCommunicationDetails(
+  congress: number, communicationType: string, communicationNumber: number,
+): Promise<{ communication: CongressSenateCommunication }> {
+  const res = await api.get<{ senateCommunication?: CongressSenateCommunication }>(
+    `/senate-communication/${congress}/${communicationType.toLowerCase()}/${communicationNumber}`,
+  );
+  return { communication: res.senateCommunication ?? (res as unknown as CongressSenateCommunication) };
+}
+
+// ─── Nomination Sub-resources ────────────────────────────────────────
+
+/** Get nominees for a position within a nomination. */
+export async function getNominationNominees(
+  congress: number, nominationNumber: number | string, ordinal: number, limit = 20,
+): Promise<{ nominees: { firstName?: string; lastName?: string; state?: string; effectiveDate?: string; [key: string]: unknown }[] }> {
+  const res = await api.get<{ nominees?: unknown[] }>(
+    `/nomination/${congress}/${nominationNumber}/${ordinal}`, { limit },
+  );
+  return { nominees: (res.nominees ?? []) as any[] };
+}
+
+/** Get committees associated with a nomination. */
+export async function getNominationCommittees(
+  congress: number, nominationNumber: number | string, limit = 20,
+): Promise<{ committees: CongressCommitteeRef[] }> {
+  const res = await api.get<{ committees?: CongressCommitteeRef[] }>(
+    `/nomination/${congress}/${nominationNumber}/committees`, { limit },
+  );
+  return { committees: res.committees ?? [] };
+}
+
+/** Get hearings associated with a nomination. */
+export async function getNominationHearings(
+  congress: number, nominationNumber: number | string, limit = 20,
+): Promise<{ hearings: CongressHearing[] }> {
+  const res = await api.get<{ hearings?: CongressHearing[] }>(
+    `/nomination/${congress}/${nominationNumber}/hearings`, { limit },
+  );
+  return { hearings: res.hearings ?? [] };
+}
+
+// ─── Treaty Sub-resources ────────────────────────────────────────────
+
+/** Get details about a specific partitioned treaty. */
+export async function getTreatyDetailWithSuffix(
+  congress: number, treatyNumber: number | string, treatySuffix: string,
+): Promise<{ treaty: CongressTreaty }> {
+  const res = await api.get<{ treaty?: CongressTreaty }>(
+    `/treaty/${congress}/${treatyNumber}/${treatySuffix}`,
+  );
+  return { treaty: res.treaty ?? (res as unknown as CongressTreaty) };
+}
+
+/** Get committees associated with a treaty. */
+export async function getTreatyCommittees(
+  congress: number, treatyNumber: number | string, limit = 20,
+): Promise<{ committees: CongressCommitteeRef[] }> {
+  const res = await api.get<{ committees?: CongressCommitteeRef[]; treatyCommittees?: CongressCommitteeRef[] }>(
+    `/treaty/${congress}/${treatyNumber}/committees`, { limit },
+  );
+  return { committees: res.committees ?? res.treatyCommittees ?? [] };
+}
+
+/** Get actions on a partitioned treaty (with suffix). */
+export async function getTreatyActionsWithSuffix(
+  congress: number, treatyNumber: number | string, treatySuffix: string, limit = 50,
+): Promise<{ actions: CongressAction[] }> {
+  const res = await api.get<{ actions?: CongressAction[] }>(
+    `/treaty/${congress}/${treatyNumber}/${treatySuffix}/actions`, { limit },
+  );
+  return { actions: res.actions ?? [] };
+}
+
+// ─── Committee Print Text ────────────────────────────────────────────
+
+/** Get text versions for a committee print. */
+export async function getCommitteePrintText(
+  congress: number, chamber: string, jacketNumber: number, limit = 20,
+): Promise<{ text: { type?: string; url?: string }[] }> {
+  const res = await api.get<{ text?: { type?: string; url?: string }[] }>(
+    `/committee-print/${congress}/${chamber.toLowerCase()}/${jacketNumber}/text`, { limit },
+  );
+  return { text: res.text ?? [] };
+}
+
+// ─── Cross-referencing Composite Functions ────────────────────────────
+
+/**
+ * Get a complete bill profile by combining multiple sub-resource calls in parallel.
+ * Returns bill details, cosponsors, actions, summaries, committees, subjects, text versions,
+ * and related bills — everything needed to understand a bill's full legislative context.
+ */
+export async function getBillFullProfile(
+  congress: number, billType: string, billNumber: number,
+): Promise<{
+  bill: CongressBillDetail;
+  cosponsors: CongressCosponsor[];
+  cosponsorPartyBreakdown: Record<string, number>;
+  actions: CongressAction[];
+  summaries: CongressSummary[];
+  committees: CongressCommitteeRef[];
+  subjects: CongressSubject[];
+  policyArea?: string;
+  textVersions: CongressTextVersion[];
+  relatedBills: CongressRelatedBill[];
+  titles: CongressBillTitle[];
+}> {
+  // First: get bill detail (also fetches cosponsors internally)
+  const { bill, cosponsors, cosponsorPartyBreakdown } = await getBillDetails(congress, billType, billNumber);
+
+  // Then: parallel fetch all sub-resources
+  const [actionsData, summariesData, committeesData, subjectsData, textData, relatedData, titlesData] = await Promise.all([
+    getBillActions(congress, billType, billNumber).catch(() => ({ actions: [] as CongressAction[] })),
+    getBillSummaries(congress, billType, billNumber).catch(() => ({ summaries: [] as CongressSummary[] })),
+    getBillCommittees(congress, billType, billNumber).catch(() => ({ committees: [] as CongressCommitteeRef[] })),
+    getBillSubjects(congress, billType, billNumber).catch(() => ({ subjects: [] as CongressSubject[], policyArea: undefined })),
+    getBillTextVersions(congress, billType, billNumber).catch(() => ({ textVersions: [] as CongressTextVersion[] })),
+    getBillRelatedBills(congress, billType, billNumber).catch(() => ({ relatedBills: [] as CongressRelatedBill[] })),
+    getBillTitles(congress, billType, billNumber).catch(() => ({ titles: [] as CongressBillTitle[] })),
+  ]);
+
+  return {
+    bill,
+    cosponsors,
+    cosponsorPartyBreakdown,
+    actions: actionsData.actions,
+    summaries: summariesData.summaries,
+    committees: committeesData.committees,
+    subjects: subjectsData.subjects,
+    policyArea: subjectsData.policyArea,
+    textVersions: textData.textVersions,
+    relatedBills: relatedData.relatedBills,
+    titles: titlesData.titles,
+  };
+}
+
+/**
+ * Get a complete member profile: details + sponsored + cosponsored legislation in parallel.
+ * Provides a 360° view of a member's legislative activity.
+ */
+export async function getMemberFullProfile(
+  bioguideId: string,
+  billLimit = 20,
+): Promise<{
+  member: CongressMemberDetail;
+  sponsoredBills: CongressSponsoredBill[];
+  cosponsoredBills: CongressSponsoredBill[];
+}> {
+  const [memberData, sponsoredData, cosponsoredData] = await Promise.all([
+    getMemberDetails(bioguideId),
+    getMemberBills(bioguideId, "sponsored", billLimit).catch(() => ({ bills: [] as CongressSponsoredBill[] })),
+    getMemberBills(bioguideId, "cosponsored", billLimit).catch(() => ({ bills: [] as CongressSponsoredBill[] })),
+  ]);
+
+  return {
+    member: memberData.member,
+    sponsoredBills: sponsoredData.bills,
+    cosponsoredBills: cosponsoredData.bills,
+  };
+}
+
+/**
+ * Get a complete nomination profile: details + actions + committees + hearings in parallel.
+ */
+export async function getNominationFullProfile(
+  congress: number, nominationNumber: number | string,
+): Promise<{
+  nomination: CongressNomination;
+  actions: CongressAction[];
+  committees: CongressCommitteeRef[];
+  hearings: CongressHearing[];
+}> {
+  const [nomData, committeesData, hearingsData] = await Promise.all([
+    getNominationDetails(congress, nominationNumber),
+    getNominationCommittees(congress, nominationNumber).catch(() => ({ committees: [] as CongressCommitteeRef[] })),
+    getNominationHearings(congress, nominationNumber).catch(() => ({ hearings: [] as CongressHearing[] })),
+  ]);
+
+  return {
+    nomination: nomData.nomination,
+    actions: nomData.actions,
+    committees: committeesData.committees,
+    hearings: hearingsData.hearings,
+  };
+}
+
+/**
+ * Get a complete treaty profile: details + actions + committees in parallel.
+ */
+export async function getTreatyFullProfile(
+  congress: number, treatyNumber: number | string,
+): Promise<{
+  treaty: CongressTreaty;
+  actions: CongressAction[];
+  committees: CongressCommitteeRef[];
+}> {
+  const [treatyData, committeesData] = await Promise.all([
+    getTreatyDetails(congress, treatyNumber),
+    getTreatyCommittees(congress, treatyNumber).catch(() => ({ committees: [] as CongressCommitteeRef[] })),
+  ]);
+
+  return {
+    treaty: treatyData.treaty,
+    actions: treatyData.actions,
+    committees: committeesData.committees,
+  };
+}
+
+/**
+ * Get a complete committee profile: details + recent bills + reports + nominations in parallel.
+ */
+export async function getCommitteeFullProfile(
+  chamber: string, committeeCode: string, limit = 10,
+): Promise<{
+  committee: CongressCommittee;
+  recentBills: CongressBill[];
+  reports: CongressCommitteeReport[];
+  nominations: CongressNomination[];
+}> {
+  const [detailData, billsData, reportsData, nominationsData] = await Promise.all([
+    getCommitteeDetails(chamber, committeeCode),
+    getCommitteeBills(chamber, committeeCode, limit).catch(() => ({ bills: [] as CongressBill[] })),
+    getCommitteeReportsForCommittee(chamber, committeeCode, limit).catch(() => ({ reports: [] as CongressCommitteeReport[] })),
+    getCommitteeNominations(chamber, committeeCode, limit).catch(() => ({ nominations: [] as CongressNomination[] })),
+  ]);
+
+  return {
+    committee: detailData.committee,
+    recentBills: billsData.bills,
+    reports: reportsData.reports,
+    nominations: nominationsData.nominations,
+  };
+}
+
+/**
+ * Extract recorded vote references from a bill's actions, then fetch the actual vote data.
+ * Connects bills to their roll-call votes with party breakdowns — the key bridge
+ * for "follow the money" investigations (bill → vote → who voted how → who donated to them).
+ */
+export async function getBillVotes(
+  congress: number, billType: string, billNumber: number,
+): Promise<{
+  houseVotes: { rollNumber: number; date?: string; vote?: CongressVoteSummary; members?: CongressVoteMember[]; partyTally?: Record<string, Record<string, number>>; source?: string }[];
+  senateVotes: { rollNumber: number; date?: string; vote?: SenateVoteSummary; members?: SenateVoteMember[]; partyTally?: Record<string, Record<string, number>> }[];
+}> {
+  // First get the bill's actions to find recorded votes
+  const { actions } = await getBillActions(congress, billType, billNumber);
+
+  const houseRolls: { rollNumber: number; date?: string; session?: number }[] = [];
+  const senateRolls: { rollNumber: number; date?: string; session?: number }[] = [];
+
+  for (const action of actions) {
+    if (!action.recordedVotes) continue;
+    for (const rv of action.recordedVotes) {
+      if (!rv.rollNumber) continue;
+      const chamber = rv.chamber?.toLowerCase() ?? (rv.url?.includes("senate.gov") ? "senate" : "house");
+      if (chamber === "senate") {
+        senateRolls.push({ rollNumber: rv.rollNumber, date: rv.date ?? action.actionDate, session: rv.sessionNumber });
+      } else {
+        senateRolls.length; // just for clarity
+        houseRolls.push({ rollNumber: rv.rollNumber, date: rv.date ?? action.actionDate, session: rv.sessionNumber });
+      }
+    }
+  }
+
+  // Fetch vote data in parallel
+  const houseVotePromises = houseRolls.map(async (rv) => {
+    try {
+      const session = rv.session ?? (rv.date ? (new Date(rv.date).getFullYear() % 2 === 1 ? 1 : 2) : currentSession());
+      const data = await getHouseVotes({ congress, session, vote_number: rv.rollNumber });
+      return { rollNumber: rv.rollNumber, date: rv.date, vote: data.vote, members: data.members, partyTally: data.partyTally, source: data.source };
+    } catch {
+      return { rollNumber: rv.rollNumber, date: rv.date };
+    }
+  });
+
+  const senateVotePromises = senateRolls.map(async (rv) => {
+    try {
+      const session = rv.session ?? (rv.date ? (new Date(rv.date).getFullYear() % 2 === 1 ? 1 : 2) : currentSession());
+      const data = await getSenateVotes({ congress, session, vote_number: rv.rollNumber });
+      return { rollNumber: rv.rollNumber, date: rv.date, vote: data.vote, members: data.members, partyTally: data.partyTally };
+    } catch {
+      return { rollNumber: rv.rollNumber, date: rv.date };
+    }
+  });
+
+  const [houseVotes, senateVotes] = await Promise.all([
+    Promise.all(houseVotePromises),
+    Promise.all(senateVotePromises),
+  ]);
+
+  return { houseVotes, senateVotes };
 }
 
 // ─── Roll Call Votes (from clerk.house.gov & senate.gov XML) ─────────
@@ -1260,42 +1569,6 @@ const xmlParser = new XMLParser({
 /** Parse XML string into a JS object using fast-xml-parser. */
 function parseXml<T = Record<string, unknown>>(xml: string): T {
   return xmlParser.parse(xml) as T;
-}
-
-/** Senate Vote Summary. */
-export interface SenateVoteSummary {
-  congress: number;
-  session: number;
-  voteNumber: number;
-  date: string;
-  question: string;
-  result: string;
-  title: string;
-  description: string;
-  majorityRequired: string;
-  document?: {
-    type: string;
-    number: string;
-    name: string;
-    title: string;
-  };
-  count: {
-    yeas: number;
-    nays: number;
-    present: number;
-    absent: number;
-  };
-  tieBreaker?: { byWhom: string; vote: string };
-}
-
-/** Senate Vote Member. */
-export interface SenateVoteMember {
-  fullName: string;
-  firstName: string;
-  lastName: string;
-  party: string;
-  state: string;
-  voteCast: string;
 }
 
 const HOUSE_CLERK_BASE = "https://clerk.house.gov/evs";
