@@ -1,18 +1,61 @@
 /**
- * ClinicalTrials.gov SDK — typed API client for clinical trial search and detail.
+ * ClinicalTrials.gov SDK — typed API client for the v2 REST API.
  *
  * Standalone — no MCP server required. Usage:
  *
- *   import { searchTrials, getTrialDetail } from "us-gov-open-data-mcp/sdk/clinical-trials";
+ *   import { searchTrials, getTrialDetail, getFieldValueStats } from "us-gov-open-data-mcp/sdk/clinical-trials";
  *
- *   const trials = await searchTrials({ query: "lung cancer", status: "RECRUITING" });
+ *   const trials = await searchTrials({ condition: "lung cancer", status: "RECRUITING" });
  *   const detail = await getTrialDetail("NCT06000000");
+ *   const phases = await getFieldValueStats({ fields: ["Phase"] });
  *
  * No API key required.
+ * Base URL: https://clinicaltrials.gov/api/v2
  * Docs: https://clinicaltrials.gov/data-api/api
  */
 
-import { createClient } from "../../shared/client.js";
+import { createClient, qp } from "../../shared/client.js";
+import type {
+  Study,
+  PagedStudies,
+  FieldNode,
+  SearchDocument,
+  EnumInfo,
+  FieldValueStats,
+  ListSizeStats,
+  SizeStats,
+  VersionInfo,
+} from "./types.js";
+import {
+  AGG_PHASE_CODES,
+  AGG_STUDY_TYPE_CODES,
+} from "./types.js";
+
+// Re-export types and constants for SDK consumers
+export type {
+  Study,
+  PagedStudies,
+  FieldNode,
+  SearchDocument,
+  EnumInfo,
+  FieldValueStats,
+  ListSizeStats,
+  SizeStats,
+  VersionInfo,
+} from "./types.js";
+export {
+  TRIAL_STATUSES,
+  TRIAL_PHASES,
+  STUDY_TYPES,
+  INTERVENTION_TYPES,
+  AGENCY_CLASSES,
+  STANDARD_AGES,
+  SEX_VALUES,
+  FIELD_STATS_TYPES,
+  AGG_PHASE_CODES,
+  AGG_STUDY_TYPE_CODES,
+  SEARCH_DEFAULT_FIELDS,
+} from "./types.js";
 
 // ─── Client ──────────────────────────────────────────────────────────
 
@@ -23,256 +66,254 @@ const api = createClient({
   cacheTtlMs: 60 * 60 * 1000, // 1 hour — trial data doesn't change fast
 });
 
-// ─── Types ───────────────────────────────────────────────────────────
+// ─── Helper ──────────────────────────────────────────────────────────
 
-/** Trial Protocol. */
-export interface TrialProtocol {
-  identificationModule?: {
-    nctId?: string;
-    orgStudyIdInfo?: { id?: string };
-    organization?: { fullName?: string; class?: string };
-    briefTitle?: string;
-    officialTitle?: string;
-    acronym?: string;
-  };
-  statusModule?: {
-    statusVerifiedDate?: string;
-    overallStatus?: string;
-    expandedAccessInfo?: { hasExpandedAccess?: boolean };
-    startDateStruct?: { date?: string; type?: string };
-    primaryCompletionDateStruct?: { date?: string; type?: string };
-    completionDateStruct?: { date?: string; type?: string };
-    studyFirstSubmitDate?: string;
-    studyFirstPostDateStruct?: { date?: string };
-    lastUpdateSubmitDate?: string;
-    lastUpdatePostDateStruct?: { date?: string };
-  };
-  sponsorCollaboratorsModule?: {
-    responsibleParty?: { type?: string; investigatorFullName?: string; investigatorAffiliation?: string };
-    leadSponsor?: { name?: string; class?: string };
-    collaborators?: Array<{ name?: string; class?: string }>;
-  };
-  descriptionModule?: {
-    briefSummary?: string;
-    detailedDescription?: string;
-  };
-  conditionsModule?: {
-    conditions?: string[];
-    keywords?: string[];
-  };
-  designModule?: {
-    studyType?: string;
-    phases?: string[];
-    designInfo?: {
-      allocation?: string;
-      interventionModel?: string;
-      primaryPurpose?: string;
-      maskingInfo?: { masking?: string };
-    };
-    enrollmentInfo?: { count?: number; type?: string };
-  };
-  armsInterventionsModule?: {
-    armGroups?: Array<{
-      label?: string;
-      type?: string;
-      description?: string;
-      interventionNames?: string[];
-    }>;
-    interventions?: Array<{
-      type?: string;
-      name?: string;
-      description?: string;
-      armGroupLabels?: string[];
-      otherNames?: string[];
-    }>;
-  };
-  eligibilityModule?: {
-    eligibilityCriteria?: string;
-    healthyVolunteers?: boolean;
-    sex?: string;
-    minimumAge?: string;
-    maximumAge?: string;
-    stdAges?: string[];
-  };
-  contactsLocationsModule?: {
-    centralContacts?: Array<{
-      name?: string;
-      role?: string;
-      phone?: string;
-      email?: string;
-    }>;
-    locations?: Array<{
-      facility?: string;
-      city?: string;
-      state?: string;
-      zip?: string;
-      country?: string;
-      status?: string;
-      geoPoint?: { lat?: number; lon?: number };
-    }>;
-  };
-  [key: string]: unknown;
+/** Build aggFilters string from phase and studyType codes. */
+function buildAggFilters(parts: string[]): string | undefined {
+  const filtered = parts.filter(Boolean);
+  return filtered.length ? filtered.join(",") : undefined;
 }
 
-/** Trial Study. */
-export interface TrialStudy {
-  protocolSection?: TrialProtocol;
-  hasResults?: boolean;
-  [key: string]: unknown;
-}
+// ─── Studies API ─────────────────────────────────────────────────────
 
-/** Trial Search Response. */
-export interface TrialSearchResponse {
-  studies: TrialStudy[];
-  totalCount: number;
-  nextPageToken?: string;
-}
-
-/** Trial Stats. */
-export interface TrialStats {
-  totalCount: number;
-  [key: string]: unknown;
-}
-
-// ─── Reference Data ──────────────────────────────────────────────────
-
-/** Trial overall status values. */
-export const TRIAL_STATUSES = {
-  RECRUITING: "Currently recruiting participants",
-  NOT_YET_RECRUITING: "Approved but not yet recruiting",
-  ACTIVE_NOT_RECRUITING: "Ongoing but no longer recruiting",
-  COMPLETED: "Trial has concluded",
-  ENROLLING_BY_INVITATION: "Recruiting by invitation only",
-  SUSPENDED: "Temporarily halted",
-  TERMINATED: "Stopped early",
-  WITHDRAWN: "Withdrawn before enrollment",
-  AVAILABLE: "Expanded access available",
-} as const;
-
-/** Study phases. */
-export const TRIAL_PHASES = {
-  EARLY_PHASE1: "Early Phase 1 (exploratory)",
-  PHASE1: "Phase 1 (safety/dosage in small group)",
-  PHASE2: "Phase 2 (efficacy/side effects in larger group)",
-  PHASE3: "Phase 3 (large-scale efficacy confirmation)",
-  PHASE4: "Phase 4 (post-market surveillance)",
-  NA: "Not applicable (non-drug studies)",
-} as const;
-
-/** Study types. */
-export const STUDY_TYPES = {
-  INTERVENTIONAL: "Testing a drug, device, or procedure",
-  OBSERVATIONAL: "Observing health outcomes without intervention",
-  EXPANDED_ACCESS: "Making experimental treatment available outside trial",
-} as const;
-
-// ─── Public API ──────────────────────────────────────────────────────
-
-/**
- * Search for clinical trials.
- *
- * Example:
- *   const trials = await searchTrials({ query: "breast cancer", status: "RECRUITING" });
- *   const trials = await searchTrials({ condition: "diabetes", sponsor: "Pfizer", phase: "PHASE3" });
- */
-export async function searchTrials(opts: {
+/** Search options for GET /studies. */
+export interface SearchTrialsOptions {
+  // Query searches (Essie expression syntax)
   query?: string;
   condition?: string;
   intervention?: string;
   sponsor?: string;
-  status?: string;
+  titles?: string;
+  outcomes?: string;
+  leadSponsor?: string;
+  studyId?: string;
+  patient?: string;
+  location?: string;
+
+  // Filters
+  status?: string | string[];
   phase?: string;
   studyType?: string;
-  state?: string;
-  country?: string;
+  geoFilter?: string;
+  filterIds?: string[];
+  filterAdvanced?: string;
+  aggFilters?: string;
+
+  // Pagination & sorting
+  sort?: string[];
+  fields?: string[];
+  countTotal?: boolean;
   pageSize?: number;
   pageToken?: string;
-  sort?: string;
-  fields?: string[];
-}): Promise<TrialSearchResponse> {
-  const params: Record<string, string | number | string[] | undefined> = {
+}
+
+/**
+ * Search for clinical trials.
+ *
+ * @example
+ *   const data = await searchTrials({ condition: "breast cancer", status: "RECRUITING" });
+ *   const data = await searchTrials({ intervention: "semaglutide", phase: "PHASE3" });
+ *   const data = await searchTrials({ geoFilter: "distance(38.9,-77.0,50mi)", condition: "diabetes" });
+ */
+export async function searchTrials(opts: SearchTrialsOptions): Promise<PagedStudies> {
+  // Build aggFilters from phase/studyType (these are NOT valid v2 filter.* params)
+  const aggParts: string[] = [];
+  if (opts.aggFilters) aggParts.push(opts.aggFilters);
+  if (opts.phase && AGG_PHASE_CODES[opts.phase]) {
+    aggParts.push(`phase:${AGG_PHASE_CODES[opts.phase]}`);
+  }
+  if (opts.studyType && AGG_STUDY_TYPE_CODES[opts.studyType]) {
+    aggParts.push(`studyType:${AGG_STUDY_TYPE_CODES[opts.studyType]}`);
+  }
+
+  const params = qp({
     "query.term": opts.query,
     "query.cond": opts.condition,
     "query.intr": opts.intervention,
     "query.spons": opts.sponsor,
-    "filter.overallStatus": opts.status,
-    "filter.phase": opts.phase,
-    "filter.studyType": opts.studyType,
-    "query.locn": opts.state || opts.country,
+    "query.titles": opts.titles,
+    "query.outc": opts.outcomes,
+    "query.lead": opts.leadSponsor,
+    "query.id": opts.studyId,
+    "query.patient": opts.patient,
+    "query.locn": opts.location,
+    "filter.overallStatus": Array.isArray(opts.status) ? opts.status.join("|") : opts.status,
+    "filter.geo": opts.geoFilter,
+    "filter.ids": opts.filterIds?.join("|"),
+    "filter.advanced": opts.filterAdvanced,
+    aggFilters: buildAggFilters(aggParts),
+    sort: opts.sort?.join("|"),
+    fields: opts.fields?.join("|"),
+    countTotal: opts.countTotal ?? true,
     pageSize: opts.pageSize ?? 10,
     pageToken: opts.pageToken,
-    sort: opts.sort,
-    "fields": opts.fields,
-  };
-  return api.get<TrialSearchResponse>("/studies", params);
+  });
+
+  return api.get<PagedStudies>("/studies", params);
 }
 
 /**
  * Get full details for a specific trial by NCT ID.
  *
- * Example:
- *   const trial = await getTrialDetail("NCT06000000");
+ * @example
+ *   const study = await getTrialDetail("NCT06000000");
+ *   const study = await getTrialDetail("NCT06000000", { fields: ["NCTId", "BriefTitle", "ResultsSection"] });
  */
-export async function getTrialDetail(nctId: string): Promise<TrialStudy> {
-  return api.get<TrialStudy>(`/studies/${encodeURIComponent(nctId)}`);
+export async function getTrialDetail(
+  nctId: string,
+  opts?: { fields?: string[] },
+): Promise<Study> {
+  return api.get<Study>(`/studies/${encodeURIComponent(nctId)}`, qp({
+    fields: opts?.fields?.join("|"),
+    markupFormat: "markdown",
+  }));
 }
 
 /**
- * Get study statistics (total count matching criteria).
+ * Get study data model metadata — field names, types, descriptions.
  *
- * Example:
- *   const stats = await getTrialStats({ condition: "COVID-19" });
+ * @example
+ *   const fields = await getStudyMetadata();
+ *   const fields = await getStudyMetadata({ includeIndexedOnly: true });
  */
-export async function getTrialStats(opts?: {
-  query?: string;
-  condition?: string;
-  status?: string;
-  phase?: string;
-}): Promise<TrialStats> {
-  const params: Record<string, string | number | undefined> = {
-    "query.term": opts?.query,
-    "query.cond": opts?.condition,
-    "filter.overallStatus": opts?.status,
-    "filter.phase": opts?.phase,
-    countTotal: 1 as any,
-    pageSize: 0,
-  };
-  const res = await api.get<TrialSearchResponse>("/studies", params);
-  return { totalCount: res.totalCount ?? 0 };
+export async function getStudyMetadata(opts?: {
+  includeIndexedOnly?: boolean;
+  includeHistoricOnly?: boolean;
+}): Promise<FieldNode[]> {
+  return api.get<FieldNode[]>("/studies/metadata", qp({
+    includeIndexedOnly: opts?.includeIndexedOnly,
+    includeHistoricOnly: opts?.includeHistoricOnly,
+  }));
 }
 
 /**
- * Get study size statistics — count trials by status for a condition.
+ * Get search area definitions — what fields are searched by each query param.
  *
- * Example:
- *   const sizes = await getTrialEnrollmentStats("Alzheimer Disease");
+ * @example
+ *   const areas = await getSearchAreas();
  */
-export async function getTrialEnrollmentStats(condition: string, opts?: {
-  intervention?: string;
-}): Promise<{
-  condition: string;
-  statuses: Record<string, number>;
-}> {
-  const statuses = ["RECRUITING", "ACTIVE_NOT_RECRUITING", "COMPLETED", "TERMINATED"];
-  const result: Record<string, number> = {};
+export async function getSearchAreas(): Promise<SearchDocument[]> {
+  return api.get<SearchDocument[]>("/studies/search-areas");
+}
 
-  for (const status of statuses) {
-    const params: Record<string, string | number | undefined> = {
-      "filter.overallStatus": status,
-      pageSize: 0,
-    };
-    // Use intervention search if the condition looks like a drug name, or if explicitly provided
-    if (opts?.intervention) {
-      params["query.intr"] = opts.intervention;
-      if (condition && condition !== opts.intervention) params["query.cond"] = condition;
-    } else {
-      params["query.cond"] = condition;
-    }
-    const res = await api.get<TrialSearchResponse>("/studies", params);
-    result[status] = res.totalCount ?? 0;
+/**
+ * Get all enum types and their valid values.
+ *
+ * @example
+ *   const enums = await getEnums();
+ *   const statusEnum = enums.find(e => e.type === 'Status');
+ */
+export async function getEnums(): Promise<EnumInfo[]> {
+  return api.get<EnumInfo[]>("/studies/enums");
+}
+
+// ─── Stats API ───────────────────────────────────────────────────────
+
+/**
+ * Get study JSON size statistics (total studies, avg size, largest).
+ *
+ * @example
+ *   const stats = await getSizeStats();
+ *   console.log(`Total studies: ${stats.totalStudies}`);
+ */
+export async function getSizeStats(): Promise<SizeStats> {
+  return api.get<SizeStats>("/stats/size");
+}
+
+/**
+ * Get field value statistics — top values, counts, ranges for any leaf field.
+ *
+ * @example
+ *   const stats = await getFieldValueStats({ fields: ["Phase"] });
+ *   const stats = await getFieldValueStats({ types: ["ENUM"], fields: ["OverallStatus"] });
+ */
+export async function getFieldValueStats(opts?: {
+  types?: string[];
+  fields?: string[];
+}): Promise<FieldValueStats[]> {
+  return api.get<FieldValueStats[]>("/stats/field/values", qp({
+    types: opts?.types?.join("|"),
+    fields: opts?.fields?.join("|"),
+  }));
+}
+
+/**
+ * Get list/array field size statistics.
+ *
+ * @example
+ *   const stats = await getFieldSizeStats({ fields: ["Phase", "Condition"] });
+ */
+export async function getFieldSizeStats(opts?: {
+  fields?: string[];
+}): Promise<ListSizeStats[]> {
+  return api.get<ListSizeStats[]>("/stats/field/sizes", qp({
+    fields: opts?.fields?.join("|"),
+  }));
+}
+
+// ─── Version API ─────────────────────────────────────────────────────
+
+/**
+ * Get API version and data timestamp.
+ *
+ * @example
+ *   const v = await getVersion();
+ *   console.log(`API: ${v.apiVersion}, Data: ${v.dataTimestamp}`);
+ */
+export async function getVersion(): Promise<VersionInfo> {
+  return api.get<VersionInfo>("/version");
+}
+
+// ─── Convenience Functions ───────────────────────────────────────────
+
+/**
+ * Get trial count breakdown by status for a condition or drug.
+ * Makes parallel requests for speed.
+ *
+ * @example
+ *   const stats = await getTrialEnrollmentStats("Alzheimer Disease");
+ *   const stats = await getTrialEnrollmentStats("semaglutide", { asIntervention: true });
+ */
+export async function getTrialEnrollmentStats(
+  term: string,
+  opts?: { asIntervention?: boolean },
+): Promise<{ term: string; statuses: Record<string, number> }> {
+  const statuses = [
+    "RECRUITING",
+    "NOT_YET_RECRUITING",
+    "ACTIVE_NOT_RECRUITING",
+    "ENROLLING_BY_INVITATION",
+    "COMPLETED",
+    "SUSPENDED",
+    "TERMINATED",
+    "WITHDRAWN",
+  ];
+
+  // Build base search params — use intervention or condition search
+  const baseOpts: SearchTrialsOptions = opts?.asIntervention
+    ? { intervention: term }
+    : { condition: term };
+
+  // Fire all status queries in parallel for speed
+  const results = await Promise.all(
+    statuses.map(async (status) => {
+      const data = await searchTrials({
+        ...baseOpts,
+        status,
+        pageSize: 0,
+        countTotal: true,
+        fields: ["NCTId"],
+      });
+      return [status, data.totalCount ?? 0] as const;
+    }),
+  );
+
+  const statusMap: Record<string, number> = {};
+  for (const [status, count] of results) {
+    if (count > 0) statusMap[status] = count;
   }
 
-  return { condition, statuses: result };
+  return { term, statuses: statusMap };
 }
 
 /** Clear the cache. */

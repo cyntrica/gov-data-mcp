@@ -21,10 +21,10 @@ ELECTIONS/CAMPAIGN FINANCE → FEC(candidates,financials,disbursements) + Congre
 EXECUTIVE ACTIONS → FederalRegister(EOs,rules) + Regulations.gov(documents,comments) + Congress(related bills,votes) + Lobbying + FRED(before/after)
 PRESIDENTIAL COMPARISON → For EACH: FRED(GDP,UNRATE,CPI,FEDFUNDS,PAYEMS,SP500) at start vs end + Treasury(debt) + Congress(laws,votes) + FedRegister(EOs) + note external shocks
 
-HEALTH → CDC(causes_of_death,mortality_rates,life_expectancy,weekly_deaths,places_health,drug_overdose) + FDA(drug_events,drug_labels,approved_drugs,drug_shortages,drug_ndc) + ClinicalTrials + NIH(projects,spending) + CMS(hospitals,nursing_homes) + OpenPayments + BLS(cpi medical) + WorldBank(health spend)
-DRUG INVESTIGATION → FDA(drug_events,drug_counts,drug_labels,drug_ndc,drug_recalls,approved_drugs,drug_shortages) + ClinicalTrials(search,stats with search_as_drug=true) + NIH(projects,spending) + OpenPayments(search,top_doctors,research,ownership) + Lobbying(PhRMA+companies) + FEC(pharma PACs→disbursements) + SEC(company financials) + WorldBank(drug pricing)
+HEALTH → CDC(causes_of_death,mortality_rates,life_expectancy,weekly_deaths,places_health,drug_overdose) + FDA(drug_events,drug_labels,approved_drugs,drug_shortages,drug_ndc) + ClinicalTrials(search,detail,results,stats,field_values) + NIH(projects,spending) + CMS(hospitals,nursing_homes) + OpenPayments + BLS(cpi medical) + WorldBank(health spend)
+DRUG INVESTIGATION → FDA(drug_events,drug_counts,drug_labels,drug_ndc,drug_recalls,approved_drugs,drug_shortages) + ClinicalTrials(search,stats with search_as_drug=true,results for completed trials,field_values for phase distribution) + NIH(projects,spending) + OpenPayments(search,top_doctors,research,ownership) + Lobbying(PhRMA+companies) + FEC(pharma PACs→disbursements) + SEC(company financials) + WorldBank(drug pricing)
 DRUG SHORTAGES → FDA(drug_shortages,drug_ndc) + BLS(cpi medical) + Congress(drug pricing bills) + Lobbying(PhRMA) + NIH(projects) + WorldBank(health spend)
-PHARMA→DOCTOR PAYMENTS → OpenPayments(search,top_doctors,by_company,by_physician,by_specialty,ownership,research) + FDA(drug_events,drug_labels for same drugs) + ClinicalTrials + Lobbying(company spend) + FEC(company PAC) + SEC(revenue)
+PHARMA→DOCTOR PAYMENTS → OpenPayments(search,top_doctors,by_company,by_physician,by_specialty,ownership,research) + FDA(drug_events,drug_labels for same drugs) + ClinicalTrials(search,results,by_location) + Lobbying(company spend) + FEC(company PAC) + SEC(revenue)
 FOOD SAFETY → FDA(food_recalls,food_adverse_events,fda_count for food aggregations) + USDA FoodData + BLS(cpi food) + USDA NASS(crop_data,prices) + Congress(food safety bills) + Lobbying
 MEDICAL DEVICES → FDA(device_events,device_recalls,device_510k,device_classification,device_pma,device_udi,device_enforcement) + CMS(hospitals) + Lobbying(manufacturer) + USPTO(search_applications) + Congress(device regulation bills)
 ANIMAL/VET DRUGS → FDA(animal_events,fda_count for animal aggregations) + USDA NASS(livestock) + Congress(animal welfare bills)
@@ -45,7 +45,7 @@ UNEMPLOYMENT → DOL(ui_claims_national,ui_claims_state) + FRED(UNRATE,PAYEMS) +
 DISASTERS → FEMA(declarations,housing_assistance,public_assistance) + NOAA(weather) + USGS(earthquakes) + USAspending(FEMA) + Census(population→per-capita) + Congress(disaster bills,votes)
 EARTHQUAKES/WATER → USGS(earthquakes,water_data,water_sites) + FEMA(declarations) + NOAA(precipitation) + EPA(facilities,drinking_water,superfund) + CDC(health impacts)
 VEHICLE SAFETY → NHTSA(recalls,recall_detail,complaints,complaint_detail,safety_ratings,safety_rating_detail,decode_vin,models,car_seat_stations) + NREL(EV chargers) + EPA(emissions)
-FDA SUBSTANCE/INGREDIENT LOOKUP → FDA(substance,unii,drug_ndc) + ClinicalTrials(search by ingredient) + NIH(projects by substance)
+FDA SUBSTANCE/INGREDIENT LOOKUP → FDA(substance,unii,drug_ndc) + ClinicalTrials(search by intervention,results for completed trials,field_values for analytics) + NIH(projects by substance)
 TRANSPORTATION → BTS(transport_stats,border_crossings) + EIA(fuel prices) + BLS(cpi transportation) + USAspending(DOT) + NHTSA + NREL + Congress(infrastructure bills)
 PATENTS → USPTO(search_applications,application_details,ptab_proceedings,ptab_decisions) + SEC(company financials) + USAspending(R&D) + WorldBank(R&D spending)
 PROCUREMENT/CONTRACTING → GSA-CALC(search_rates,contract_rates) + USAspending(by_award,by_agency,by_recipient) + Lobbying(contractor lobbying) + SEC(contractor financials) + Congress(procurement bills)

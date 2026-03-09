@@ -479,7 +479,8 @@ export const analysisPrompts: InputPrompt<any, any>[] = [
       `- fda_drug_shortages search='generic_name:"${drug}"' — is the drug in shortage?\n\n` +
       "CLINICAL TRIALS:\n" +
       `- clinical_trials_stats condition='${drug}' search_as_drug=true — pipeline activity\n` +
-      `- clinical_trials_search intervention='${drug}' status=RECRUITING — ongoing trials\n\n` +
+      `- clinical_trials_search intervention='${drug}' status=RECRUITING — ongoing trials\n` +
+      `- clinical_trials_results nct_id=<NCT_ID> — outcomes/adverse events for completed trials\n\n` +
       "MANUFACTURER:\n" +
       "- Identify the manufacturer from FDA results\n" +
       "- lobbying_search for the manufacturer — lobbying spend\n" +
@@ -882,7 +883,9 @@ export const analysisPrompts: InputPrompt<any, any>[] = [
       `- clinical_trials_stats condition='${target}' — pipeline breakdown by status\n` +
       `- clinical_trials_search for '${target}' with status=RECRUITING — active trials\n` +
       `- clinical_trials_search for '${target}' with phase=PHASE3 — late-stage candidates\n` +
-      `- clinical_trials_search for '${target}' with status=COMPLETED — recently completed\n\n` +
+      `- clinical_trials_search for '${target}' with status=COMPLETED — recently completed\n` +
+      `- clinical_trials_results nct_id=<NCT_ID> — outcomes/adverse events for completed trials\n` +
+      `- clinical_trials_field_values fields='Phase' — overall phase distribution analytics\n\n` +
       "FDA SAFETY DATA:\n" +
       `- fda_drug_events for drugs treating ${target} — adverse event reports\n` +
       `- fda_drug_counts for top drugs in the space\n` +
@@ -1106,7 +1109,9 @@ export const analysisPrompts: InputPrompt<any, any>[] = [
         `- fda_drug_counts count_field='patient.reaction.reactionmeddrapt.exact' search='patient.drug.openfda.brand_name:${drug}' — top adverse reactions\n\n` +
         "CLINICAL PIPELINE:\n" +
         `- clinical_trials_search intervention='${drug}' — active trials\n` +
-        `- clinical_trials_stats condition='${drug}' search_as_drug=true — pipeline overview\n\n` +
+        `- clinical_trials_stats condition='${drug}' search_as_drug=true — pipeline overview\n` +
+        `- clinical_trials_results nct_id=<NCT_ID> — outcomes for completed trials\n` +
+        `- clinical_trials_by_location — trial access disparity analysis\n\n` +
         "MANUFACTURER INFLUENCE:\n" +
         "- Identify manufacturer from FDA results above, then:\n" +
         "- lobbying_search for the manufacturer — lobbying expenditures and issue areas\n" +
