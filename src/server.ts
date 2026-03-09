@@ -28,6 +28,7 @@ import { FastMCP, type Tool, type InputPrompt } from "fastmcp";
 import { z } from "zod";
 import { CROSS_REFERENCE_GUIDE } from "./server/instructions.js";
 import { analysisPrompts } from "./server/prompts.js";
+import { executeInSandbox } from "./shared/sandbox.js";
 import type { ApiModule } from "./shared/types.js";
 
 const logger = {
@@ -178,6 +179,79 @@ server.addTool({
 // ─── Cross-cutting analysis prompts ──────────────────────────────────
 
 server.addPrompts(analysisPrompts as any);
+
+// ─── Code mode tool ──────────────────────────────────────────────────
+
+// Build a lookup map of all registered tools for code_mode to call
+const allToolMap = new Map<string, (args: Record<string, unknown>) => Promise<unknown>>();
+for (const mod of activeModules) {
+  for (const tool of mod.tools) {
+    allToolMap.set(tool.name, (tool as any).execute);
+  }
+}
+
+server.addTool({
+  name: "code_mode",
+  description:
+    "Run a JavaScript processing script against any tool's output in a WASM sandbox.\n" +
+    "Calls the specified tool first, then runs your script with the raw response as `DATA` (string).\n" +
+    "Only your script's console.log() output enters context — typically 65-99% smaller.\n\n" +
+    "USE THIS when you need specific fields, counts, or filters from a large response.\n" +
+    "DO NOT use this when you need to read and interpret the full data for cross-referencing or analysis.\n\n" +
+    "The script can: JSON.parse(DATA), use loops/map/filter/reduce, Math, string ops, console.log().\n" +
+    "The script CANNOT: access files, network, Node.js APIs, or import modules.\n\n" +
+    "Example — count serious reactions for a drug:\n" +
+    "  tool='fda_drug_events', tool_args={\"search\":\"patient.drug.openfda.brand_name:aspirin\",\"limit\":100},\n" +
+    "  code='const d=JSON.parse(DATA);const data=d.data||d;const items=data.items||data.results||[];' +\n" +
+    "       'const counts={};items.forEach(r=>{const rxs=r.reactions||[];rxs.forEach(rx=>{counts[rx]=(counts[rx]||0)+1})});' +\n" +
+    "       'Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([k,v])=>console.log(k+\": \"+v))'",
+  annotations: { title: "Code Mode: Process Tool Output", readOnlyHint: true },
+  parameters: z.object({
+    tool: z.string().describe(
+      "Name of the MCP tool to call (e.g. 'fda_drug_events', 'fred_series_data', 'congress_search_bills')"
+    ),
+    tool_args: z.record(z.string(), z.unknown()).optional().describe(
+      "Arguments to pass to the tool, as a JSON object (e.g. {\"search\": \"serious:1\", \"limit\": 50})"
+    ),
+    code: z.string().describe(
+      "JavaScript code to process the result. The tool's full response is available as DATA (string). " +
+      "Use JSON.parse(DATA) to parse it. Use console.log() to produce output. " +
+      "Only console.log output is returned — keep it concise."
+    ),
+  }),
+  execute: async ({ tool: toolName, tool_args: toolArgs, code }) => {
+    // Find the tool
+    const toolFn = allToolMap.get(toolName);
+    if (!toolFn) {
+      const available = [...allToolMap.keys()].sort().join(", ");
+      return `Error: tool '${toolName}' not found. Available tools: ${available}`;
+    }
+
+    // Call the underlying tool
+    let rawResult: string;
+    try {
+      const result = await toolFn(toolArgs ?? {});
+      rawResult = typeof result === "string" ? result : JSON.stringify(result);
+    } catch (err) {
+      return `Error calling '${toolName}': ${(err as Error).message}`;
+    }
+
+    // Execute script in sandbox
+    const { stdout, beforeBytes, afterBytes, reductionPct, error } =
+      await executeInSandbox(rawResult, code);
+
+    if (error) {
+      return (
+        `Script error: ${error}\n\n` +
+        `The tool '${toolName}' returned ${(beforeBytes / 1024).toFixed(1)}KB of data. ` +
+        `Fix the script and try again. The DATA variable contains the tool's raw response as a string.`
+      );
+    }
+
+    const tag = `[code-mode: ${(beforeBytes / 1024).toFixed(1)}KB → ${(afterBytes / 1024).toFixed(1)}KB (${reductionPct.toFixed(1)}% reduction)]`;
+    return `${stdout}\n\n${tag}`;
+  },
+});
 
 // ─── Auto-generate resources ─────────────────────────────────────────
 

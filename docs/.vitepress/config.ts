@@ -1,8 +1,9 @@
 import { defineConfig } from "vitepress";
+import { withMermaid } from "vitepress-plugin-mermaid";
 import typedocSidebar from "../api/typedoc-sidebar.json";
 import { toolsSidebar, dsSidebar } from "../generated-sidebar.json";
 
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: "US Government Open Data MCP",
   description:
     "MCP server + TypeScript SDK for 40+ U.S. government APIs",
@@ -75,6 +76,7 @@ export default defineConfig({
           items: [
             { text: "MCP Usage", link: "/guide/mcp-usage" },
             { text: "SDK Usage", link: "/guide/sdk-usage" },
+            { text: "Code Mode", link: "/guide/code-mode" },
           ],
         },
         {
@@ -141,4 +143,4 @@ export default defineConfig({
       copyright: "Data sourced from official U.S. government APIs.",
     },
   },
-});
+}));
