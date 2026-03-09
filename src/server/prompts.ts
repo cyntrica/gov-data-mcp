@@ -451,13 +451,17 @@ export const analysisPrompts: InputPrompt<any, any>[] = [
       const drug = _drug ?? "";
       return `Investigate drug safety: ${drug}\n\n` +
       "FDA APPROVAL STATUS:\n" +
-      `- fda_approved_drugs search='openfda.brand_name:"${drug}"' — approval history, active ingredients, marketing status\n\n` +
+      `- fda_approved_drugs search='openfda.brand_name:"${drug}"' — approval history, active ingredients, marketing status\n` +
+      `- fda_drug_ndc search='brand_name:"${drug}"' — NDC codes, dosage forms, active ingredients, DEA schedule\n\n` +
+      "PRESCRIBING INFORMATION:\n" +
+      `- fda_drug_labels search='openfda.brand_name:"${drug}"' — official label: indications, warnings, boxed warnings, adverse reactions, drug interactions\n\n` +
       "ADVERSE EVENTS:\n" +
       `- fda_drug_events search='patient.drug.openfda.brand_name:${drug} AND serious:1' — serious reports\n` +
       `- fda_drug_counts count_field='patient.reaction.reactionmeddrapt.exact' ` +
       `search='patient.drug.openfda.brand_name:${drug}' — top adverse reactions\n\n` +
-      "RECALLS:\n" +
-      `- fda_drug_recalls search='openfda.brand_name:${drug}' — any recall enforcement reports\n\n` +
+      "RECALLS & SHORTAGES:\n" +
+      `- fda_drug_recalls search='openfda.brand_name:${drug}' — any recall enforcement reports\n` +
+      `- fda_drug_shortages search='generic_name:"${drug}"' — is the drug in shortage?\n\n` +
       "CLINICAL TRIALS:\n" +
       `- clinical_trials_stats condition='${drug}' search_as_drug=true — pipeline activity\n` +
       `- clinical_trials_search intervention='${drug}' status=RECRUITING — ongoing trials\n\n` +
@@ -866,7 +870,9 @@ export const analysisPrompts: InputPrompt<any, any>[] = [
       `- clinical_trials_search for '${target}' with status=COMPLETED — recently completed\n\n` +
       "FDA SAFETY DATA:\n" +
       `- fda_drug_events for drugs treating ${target} — adverse event reports\n` +
-      `- fda_drug_counts for top drugs in the space\n\n` +
+      `- fda_drug_counts for top drugs in the space\n` +
+      `- fda_approved_drugs search='openfda.brand_name:"drug_name"' — check approval status of promising candidates\n` +
+      `- fda_drug_shortages — are any existing treatments in shortage?\n\n` +
       "DISEASE BURDEN:\n" +
       `- cdc_causes_of_death — is this a leading cause of death?\n` +
       `- cdc_mortality_rates — recent death rate trends\n\n` +

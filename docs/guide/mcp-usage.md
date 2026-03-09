@@ -30,7 +30,7 @@ Tools: `lobbying_search`, `lobbying_detail`, `congress_search_bills`
 
 > "Show me the adverse event profile for Ozempic including clinical trials, FDA reports, and pharma payments to doctors."
 
-Tools: `fda_drug_events`, `fda_drug_counts`, `clinical_trials_search`, `open_payments_search`, `nih_search_projects`
+Tools: `fda_drug_events`, `fda_drug_counts`, `fda_drug_labels`, `fda_approved_drugs`, `fda_drug_shortages`, `clinical_trials_search`, `open_payments_search`, `nih_search_projects`
 
 ## Financial
 
