@@ -73,6 +73,10 @@ describe("API module exports", () => {
       expect(typeof mod.clearCache).toBe("function");
     });
 
+    it("clearCache() can be called without throwing", () => {
+      expect(() => (mod.clearCache as () => void)()).not.toThrow();
+    });
+
     // Domain validation
     it("exports domains (non-empty array of valid Domain values)", () => {
       const domains = mod.domains as string[];
@@ -161,5 +165,73 @@ describe("Cross-module validation", () => {
     const names = moduleDirs.map(dir => getModule(dir).name as string);
     const dupes = names.filter((n, i) => names.indexOf(n) !== i);
     expect(dupes, `Duplicate module names: ${dupes.join(", ")}`).toHaveLength(0);
+  });
+});
+
+// ─── clear_cache dispatch logic ──────────────────────────────────────
+
+/**
+ * Mirrors the clear_cache execute function in server.ts.
+ * Kept here so the logic is independently tested without importing the server.
+ */
+function executeClearCache(
+  mods: Array<{ name: string; clearCache?: () => void }>,
+  source?: string,
+): string {
+  const cleared: string[] = [];
+  for (const mod of mods) {
+    if (source && mod.name !== source) continue;
+    if (mod.clearCache) { mod.clearCache(); cleared.push(mod.name); }
+  }
+  return cleared.length
+    ? `Cache cleared: ${cleared.join(", ")}. Next queries will fetch fresh data.`
+    : source
+      ? `Unknown source "${source}". Available: ${mods.map(m => m.name).join(", ")}`
+      : "No caches to clear.";
+}
+
+describe("clear_cache dispatch logic", () => {
+  it("clears a specific module by name", () => {
+    const cleared: string[] = [];
+    const mods = [
+      { name: "fred", clearCache: () => void cleared.push("fred") },
+      { name: "bls", clearCache: () => void cleared.push("bls") },
+    ];
+    const result = executeClearCache(mods, "fred");
+    expect(cleared).toEqual(["fred"]);
+    expect(result).toBe("Cache cleared: fred. Next queries will fetch fresh data.");
+  });
+
+  it("clears all modules when no source given", () => {
+    const cleared: string[] = [];
+    const mods = [
+      { name: "fred", clearCache: () => void cleared.push("fred") },
+      { name: "bls", clearCache: () => void cleared.push("bls") },
+    ];
+    const result = executeClearCache(mods);
+    expect(cleared).toEqual(["fred", "bls"]);
+    expect(result).toBe("Cache cleared: fred, bls. Next queries will fetch fresh data.");
+  });
+
+  it("returns error message for unknown source", () => {
+    const mods = [
+      { name: "fred", clearCache: () => {} },
+      { name: "bls", clearCache: () => {} },
+    ];
+    const result = executeClearCache(mods, "notamodule");
+    expect(result).toContain("Unknown source \"notamodule\"");
+    expect(result).toContain("fred");
+    expect(result).toContain("bls");
+  });
+
+  it("skips modules without a clearCache function", () => {
+    const cleared: string[] = [];
+    const mods = [
+      { name: "fred", clearCache: () => void cleared.push("fred") },
+      { name: "no-cache" },
+    ];
+    const result = executeClearCache(mods);
+    expect(cleared).toEqual(["fred"]);
+    expect(result).toBe("Cache cleared: fred. Next queries will fetch fresh data.");
   });
 });

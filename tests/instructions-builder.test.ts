@@ -124,6 +124,13 @@ describe("buildInstructions", () => {
     expect(result).toContain("=== ROUTING TABLE ===");
     // No routing entries, but header is still there
   });
+
+  it("handles zero modules without throwing", () => {
+    expect(() => buildInstructions([])).not.toThrow();
+    const result = buildInstructions([]);
+    expect(typeof result).toBe("string");
+    expect(result.length).toBeGreaterThan(0);
+  });
 });
 
 // ─── buildAnalysisPrompts ─────────────────────────────────────────────

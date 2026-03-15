@@ -107,7 +107,7 @@
   "dependencies": {
     "dotenv": "^17.3.1",
     "fast-xml-parser": "^5.4.1",
-    "fastmcp": "^3.33.0",
+    "fastmcp": "^3.34.0",
     "he": "^1.2.0",
     "quickjs-emscripten": "^0.32.0",
     "zod": "^4.3.6"
