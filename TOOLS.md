@@ -1,11 +1,13 @@
 # Gov Data MCP — Complete Tool Reference
 
-**97 modules, 532 tools** covering federal, state, and international government data.
+**114 modules, 562 tools** covering federal, state, and international government data.
 
 ---
 
 ## Table of Contents
 
+- [Economy](#economy)
+  - [CareerOneStop (DOL Career Resources)](#careeronestop)
 - [Health](#health)
   - [CDC Health Data](#cdc)
   - [ClinicalTrials.gov](#clinical-trials)
@@ -13,10 +15,16 @@
   - [FDA (OpenFDA)](#fda)
   - [NIH RePORTER](#nih)
   - [PubMed (NCBI E-utilities)](#pubmed)
+  - [SAMHSA (Substance Abuse & Mental Health Services)](#samhsa)
+  - [SSA (Social Security Administration)](#ssa)
   - [VA (Department of Veterans Affairs)](#va)
 - [Finance](#finance)
   - [CFPB HMDA (Home Mortgage Disclosure Act)](#cfpb-hmda)
+  - [FollowTheMoney (State Campaign Finance)](#followthemoney)
+  - [ITA (International Trade Administration)](#ita-trade)
   - [OFAC (Office of Foreign Assets Control)](#ofac)
+  - [OpenSecrets (Federal Campaign Finance)](#opensecrets)
+  - [USITC (U.S. International Trade Commission)](#usitc)
 - [Energy](#energy)
   - [California ISO (MIDAS API)](#caiso)
   - [ERCOT (Electric Reliability Council of Texas)](#ercot)
@@ -32,9 +40,12 @@
   - [National Weather Service](#nws)
   - [USACE CWMS (Corps Water Management System)](#usace-cwms)
   - [USGS (U.S. Geological Survey)](#usgs)
+  - [WQP (Water Quality Portal)](#wqp)
 - [Education](#education)
   - [College Scorecard](#college-scorecard)
   - [NAEP (Nation's Report Card)](#naep)
+  - [NARA (National Archives)](#nara)
+  - [Urban Institute Education Data Explorer](#urban-ed)
 - [Spending](#spending)
   - [Open Payments (Sunshine Act)](#open-payments)
   - [USAspending](#usaspending)
@@ -46,11 +57,13 @@
   - [USDA FoodData Central](#usda-fooddata)
   - [USDA NASS QuickStats](#usda-nass)
 - [Justice](#justice)
+  - [CourtListener (Case Law)](#courtlistener)
   - [DOJ News](#doj-news)
   - [FBI Crime Data Explorer](#fbi)
 - [Transportation](#transportation)
   - [BTS (Bureau of Transportation Statistics)](#bts)
   - [FAA Aviation Weather](#faa-weather)
+  - [FMCSA (Federal Motor Carrier Safety Administration)](#fmcsa)
   - [NTSB (National Transportation Safety Board)](#ntsb)
 - [State & Local](#state-local)
   - [BART (Bay Area Rapid Transit)](#bart)
@@ -75,6 +88,7 @@
   - [WMATA (Washington DC Metro & Bus)](#wmata)
   - [WSDOT Ferries (Washington State Ferries)](#wsdot-ferries)
 - [International](#international)
+  - [State Department Travel Advisories](#state-travel)
   - [World Bank](#world-bank)
 - [Infrastructure](#infrastructure)
   - [FCC Broadband Map](#fcc)
@@ -91,6 +105,7 @@
   - [NSF (National Science Foundation)](#nsf)
   - [SBIR/STTR](#sbir)
 - [Security](#security)
+  - [CISA KEV (Known Exploited Vulnerabilities)](#cisa-kev)
   - [NVD (National Vulnerability Database)](#nvd)
 - [Culture](#culture)
   - [LOC (Library of Congress)](#loc)
@@ -118,8 +133,11 @@
   - [Congress.gov](#congress)
   - [eCFR (Code of Federal Regulations)](#ecfr)
   - [Federal Register](#federal-register)
+  - [FOIA.gov (Freedom of Information Act)](#foia)
   - [GovInfo](#govinfo)
+  - [OpenStates (State Legislation)](#openstates)
   - [Regulations.gov](#regulations)
+  - [USCIS (U.S. Citizenship and Immigration Services)](#uscis)
 - [Government Operations](#government-operations)
   - [DAP (Digital Analytics Program)](#dap)
   - [OPM Operating Status](#opm)
@@ -131,6 +149,43 @@
   - [NASA Image & Video Library](#nasa-images)
 - [Research](#research)
   - [USPTO Open Data Portal](#uspto)
+
+---
+
+## Economy
+
+### CareerOneStop (DOL Career Resources)
+
+Search occupations by keyword and look up state licensing requirements from the Department of Labor's CareerOneStop API.
+
+**Workflow:** Use cos_occupation_search to find occupations by keyword → cos_licensing to look up state licensing/certification requirements for a specific occupation.
+
+**Tips:** Occupation searches return O*NET codes — use these codes for licensing lookups. Use 2-letter state codes for licensing (e.g. 'TX', 'NY'). The userId parameter is typically your registered user ID or API token.
+
+| Tool | Description | · Auth: `CAREERONESTOP_TOKEN` |
+|------|-------------|---|
+| `cos_occupation_search` | Search occupations by keyword using the CareerOneStop API. |
+| `cos_licensing` | Look up licensing and certification requirements for an occupation by state. |
+
+#### `cos_occupation_search`
+
+Search occupations by keyword using the CareerOneStop API.
+Returns matching occupations with O*NET codes, titles, and descriptions.
+Use O*NET codes from results for more specific lookups.
+
+**Parameters:**
+- `keyword` **(required)** — Occupation keyword (e.g. 'software developer', 'nurse', 'electrician')
+- `location` — Location code (default 'US'; use state code like 'TX' for state-specific)
+
+#### `cos_licensing`
+
+Look up licensing and certification requirements for an occupation by state.
+Returns license names, types, issuing agencies, and application URLs.
+Useful for understanding state-specific professional requirements.
+
+**Parameters:**
+- `keyword` **(required)** — Occupation keyword (e.g. 'nurse', 'electrician', 'real estate')
+- `state` **(required)** — 2-letter state code (e.g. 'TX', 'CA', 'NY')
 
 ---
 
@@ -1099,6 +1154,49 @@ Useful for discovering which NCBI databases exist beyond PubMed.
 
 ---
 
+### SAMHSA (Substance Abuse & Mental Health Services)
+
+Find substance abuse and mental health treatment facilities nationwide via the FindTreatment.gov locator
+
+**Workflow:** samhsa_treatment_search → find treatment facilities by location and service type
+
+**Tips:** Service types: SA (substance abuse), MH (mental health), BOTH. Provide an address or city/state for location search.
+
+| Tool | Description | · No auth required |
+|------|-------------|---|
+| `samhsa_treatment_search` | Find substance abuse and mental health treatment facilities by location. |
+
+#### `samhsa_treatment_search`
+
+Find substance abuse and mental health treatment facilities by location.
+Service types: SA (substance abuse), MH (mental health), BOTH.
+
+**Parameters:**
+- `address` **(required)** — Address, city/state, or ZIP code (e.g. 'Washington, DC' or '20001')
+- `serviceType` — SA=substance abuse, MH=mental health, BOTH (default)
+- `limit` — Max results (default 25)
+
+---
+
+### SSA (Social Security Administration)
+
+Social Security Administration open data — OASDI beneficiary statistics and program data
+
+**Workflow:** ssa_beneficiaries → get beneficiary data links and summary info
+
+**Tips:** SSA publishes aggregate statistics on Social Security beneficiaries, payments, and program participation
+
+| Tool | Description | · No auth required |
+|------|-------------|---|
+| `ssa_beneficiaries` | Get SSA OASDI and SSI beneficiary data resources. |
+
+#### `ssa_beneficiaries`
+
+Get SSA OASDI and SSI beneficiary data resources.
+Returns links to downloadable datasets for Social Security beneficiaries by state, county, and ZIP code.
+
+---
+
 ### VA (Department of Veterans Affairs)
 
 Department of Veterans Affairs — search VA facilities including hospitals, clinics, cemeteries, benefits offices, and vet centers by location and type. Requires free API key from developer.va.gov.
@@ -1220,6 +1318,68 @@ Used for HMDA reporting compliance verification.
 
 ---
 
+### FollowTheMoney (State Campaign Finance)
+
+State-level campaign finance contributions — search by candidate, donor, state, and year
+
+**Workflow:** ftm_contributions → search state campaign finance contributions
+
+**Tips:** Search by state abbreviation (e.g. 'CA', 'NY'), year, candidate ID, or donor ID. Data covers all 50 states.
+
+| Tool | Description | · Auth: `FTM_API_KEY` |
+|------|-------------|---|
+| `ftm_contributions` | Search state-level campaign finance contributions by candidate, donor, state, and year. |
+
+#### `ftm_contributions`
+
+Search state-level campaign finance contributions by candidate, donor, state, and year.
+Covers all 50 states via the National Institute on Money in Politics.
+
+**Parameters:**
+- `state` — State abbreviation (e.g. 'CA', 'NY', 'TX')
+- `candidateId` — Candidate entity ID
+- `donorId` — Donor entity ID
+- `year` — Election year (e.g. 2024)
+- `limit` — Max results (default 50)
+
+---
+
+### ITA (International Trade Administration)
+
+Search FTA (Free Trade Agreement) tariff rates by HTS code and partner country, and find international trade events from the International Trade Administration.
+
+**Workflow:** Use ita_tariff_rates to look up FTA tariff rates for specific products and countries → ita_trade_events to find upcoming trade shows, missions, and events.
+
+**Tips:** Tariff searches work with HTS subheading codes (6-digit). Partner countries use full names. Trade events can be filtered by country or keyword.
+
+| Tool | Description | · Auth: `ITA_API_KEY` |
+|------|-------------|---|
+| `ita_tariff_rates` | Search Free Trade Agreement (FTA) tariff rates by HTS code, partner country, or keyword. |
+| `ita_trade_events` | Search international trade events including trade shows, trade missions, and seminars. |
+
+#### `ita_tariff_rates`
+
+Search Free Trade Agreement (FTA) tariff rates by HTS code, partner country, or keyword.
+Returns tariff lines, rates, base rates, final year, and rule text for products covered by U.S. FTAs.
+
+**Parameters:**
+- `query` — Keyword search (e.g. 'steel', 'automotive')
+- `hts_subheading` — HTS subheading code (6-digit, e.g. '7206.10')
+- `partner_country` — Partner country name (e.g. 'Korea', 'Colombia')
+- `limit` — Max results (default 25)
+
+#### `ita_trade_events`
+
+Search international trade events including trade shows, trade missions, and seminars.
+Find upcoming events by keyword or country to help U.S. businesses expand internationally.
+
+**Parameters:**
+- `query` — Keyword search (e.g. 'technology', 'agriculture')
+- `country` — Country name (e.g. 'Japan', 'Germany')
+- `limit` — Max results (default 25)
+
+---
+
 ### OFAC (Office of Foreign Assets Control)
 
 U.S. Treasury sanctions lists: SDN (Specially Designated Nationals), consolidated non-SDN lists, fuzzy name search, and filtered datasets by entity type, program, or country. No API key required.
@@ -1273,6 +1433,75 @@ At least one filter parameter should be provided.
 #### `ofac_exports`
 
 List available OFAC sanctions data export files and formats.
+
+---
+
+### OpenSecrets (Federal Campaign Finance)
+
+Federal campaign finance analysis — candidate fundraising summaries, top contributors, and industry contributions
+
+**Workflow:** os_candidate_summary → overview, os_top_contributors → top donors, os_industry_totals → industry breakdown
+
+**Tips:** CID is the OpenSecrets candidate ID (e.g. N00007360 for Nancy Pelosi). Cycle is an even election year (e.g. 2024).
+
+| Tool | Description | · Auth: `OPENSECRETS_API_KEY` |
+|------|-------------|---|
+| `os_candidate_summary` | Get a candidate's fundraising summary — total raised, spent, cash on hand, debt. |
+| `os_top_contributors` | Get top contributors (organizations) to a candidate. |
+| `os_industry_totals` | Get industry contribution totals for a candidate. |
+
+#### `os_candidate_summary`
+
+Get a candidate's fundraising summary — total raised, spent, cash on hand, debt.
+Requires OpenSecrets CID (e.g. N00007360).
+
+**Parameters:**
+- `cid` **(required)** — OpenSecrets candidate ID (e.g. 'N00007360')
+- `cycle` — Election cycle year (even year, e.g. 2024)
+
+#### `os_top_contributors`
+
+Get top contributors (organizations) to a candidate.
+Shows PAC and individual contributions by organization.
+
+**Parameters:**
+- `cid` **(required)** — OpenSecrets candidate ID (e.g. 'N00007360')
+- `cycle` — Election cycle year (even year, e.g. 2024)
+
+#### `os_industry_totals`
+
+Get industry contribution totals for a candidate.
+Shows how much each industry sector contributed via PACs and individuals.
+
+**Parameters:**
+- `cid` **(required)** — OpenSecrets candidate ID (e.g. 'N00007360')
+- `cycle` — Election cycle year (even year, e.g. 2024)
+
+---
+
+### USITC (U.S. International Trade Commission)
+
+Query U.S. import/export trade statistics by HTS code, partner country, and year from the USITC DataWeb. No API key required.
+
+**Workflow:** Use usitc_trade_data to query trade statistics by HTS code, partner country, year, and trade type (import/export/balance).
+
+**Tips:** HTS codes are hierarchical: 2-digit = chapter, 4-digit = heading, 6-digit = subheading. Use ISO 3-letter country codes. Trade types: 'import', 'export', 'balance'.
+
+| Tool | Description | · No auth required |
+|------|-------------|---|
+| `usitc_trade_data` | Query U.S. import/export trade statistics from the USITC DataWeb. |
+
+#### `usitc_trade_data`
+
+Query U.S. import/export trade statistics from the USITC DataWeb.
+Search by HTS (Harmonized Tariff Schedule) code, partner country, year, and trade type.
+Returns trade values, quantities, and product descriptions.
+
+**Parameters:**
+- `hts_code` — HTS code (e.g. '8471' for computers, '0901' for coffee)
+- `country_code` — ISO 3-letter partner country code (e.g. 'CHN', 'MEX', 'CAN')
+- `year` — Year (e.g. '2023')
+- `trade_type` — Trade type (default: 'import')
 
 ---
 
@@ -2244,6 +2473,46 @@ Parameter codes: 00060=discharge (cfs), 00065=gage height (ft), 00010=water temp
 
 ---
 
+### WQP (Water Quality Portal)
+
+Unified access to water quality data from USGS, EPA, and 400+ state agencies — monitoring stations and sample results
+
+**Workflow:** wqp_stations → find monitoring stations, then wqp_results → get water quality sample data
+
+**Tips:** Search by state FIPS code (e.g. US:06 for California). Common parameters: Temperature, pH, Dissolved oxygen, Nitrogen, Phosphorus
+
+| Tool | Description | · No auth required |
+|------|-------------|---|
+| `wqp_stations` | Search water quality monitoring stations by state, county, or HUC code. |
+| `wqp_results` | Get water quality sample results by station ID and/or parameter name. |
+
+#### `wqp_stations`
+
+Search water quality monitoring stations by state, county, or HUC code.
+Data from USGS, EPA, and 400+ state agencies.
+
+**Parameters:**
+- `stateCode` — 2-digit state FIPS code (e.g. '06' for CA, '36' for NY)
+- `countyCode` — 3-digit county FIPS code (requires stateCode)
+- `huc` — Hydrologic Unit Code (2-12 digits)
+- `siteType` — e.g. 'Stream', 'Lake', 'Well', 'Spring'
+- `limit` — Max results (default 50)
+
+#### `wqp_results`
+
+Get water quality sample results by station ID and/or parameter name.
+Common parameters: 'Temperature, water', 'pH', 'Dissolved oxygen', 'Nitrogen', 'Phosphorus'.
+
+**Parameters:**
+- `siteId` — Monitoring location ID (e.g. 'USGS-01646500')
+- `characteristicName` — Parameter name (e.g. 'Temperature, water', 'pH')
+- `stateCode` — 2-digit state FIPS code
+- `startDate` — Start date (MM-DD-YYYY)
+- `endDate` — End date (MM-DD-YYYY)
+- `limit` — Max results (default 50)
+
+---
+
 ## Education
 
 ### College Scorecard
@@ -2451,6 +2720,90 @@ Returns variable names (Varname), short labels, and long labels.
 - `subject` **(required)** — Subject: 'reading', 'math', 'science', etc. Aliases accepted.
 - `cohort` **(required)** — Cohort: 1 (grade 4/age 9), 2 (grade 8/age 13), 3 (grade 12/age 17)
 - `years` **(required)** — Comma-separated years: '2022' or '2019,2022'
+
+---
+
+### NARA (National Archives)
+
+Search the National Archives catalog — millions of historical records, documents, photographs, and government publications. Includes metadata, descriptions, and links to digitized content.
+
+**Workflow:** nara_search to search the National Archives catalog by keyword → nara_record to get full record details by NARA ID.
+
+**Tips:** Rate limited to 10,000 queries/month. Search returns brief metadata; use nara_record for full details. Results include descriptions, dates, creators, and links to digitized content when available. Limit max 100, offset for pagination.
+
+| Tool | Description | · No auth required |
+|------|-------------|---|
+| `nara_search` | Search the National Archives catalog for historical records, documents, photographs, and government publications. |
+| `nara_record` | Get full details for a specific National Archives record by NARA ID. |
+
+#### `nara_search`
+
+Search the National Archives catalog for historical records, documents, photographs, and government publications.
+Returns record metadata including titles, descriptions, dates, and links to digitized content.
+Rate limited to 10,000 queries/month.
+
+**Parameters:**
+- `query` **(required)** — Search keywords: 'civil war', 'moon landing', 'constitution', 'executive order'
+- `limit` — Results to return (default 20, max 100)
+- `offset` — Offset for pagination (default 0)
+
+#### `nara_record`
+
+Get full details for a specific National Archives record by NARA ID.
+Returns complete metadata, descriptions, creators, and links to digitized content when available.
+
+**Parameters:**
+- `nara_id` **(required)** — NARA record ID (from search results)
+
+---
+
+### Urban Institute Education Data Explorer
+
+K-12, higher ed, and school finance data across all 50 states — schools, districts, and colleges from the Urban Institute
+
+**Workflow:** urban_ed_schools / urban_ed_districts / urban_ed_colleges → query enrollment data by year and state
+
+**Tips:** Use 2-digit state FIPS codes (e.g. 06=CA, 36=NY, 48=TX). Year is required. Data covers CCD (K-12) and IPEDS (higher ed).
+
+| Tool | Description | · No auth required |
+|------|-------------|---|
+| `urban_ed_schools` | Query school-level enrollment data from the CCD (Common Core of Data). |
+| `urban_ed_districts` | Query district-level enrollment data from the CCD. |
+| `urban_ed_colleges` | Query college/university enrollment data (FTE) from IPEDS. |
+
+#### `urban_ed_schools`
+
+Query school-level enrollment data from the CCD (Common Core of Data).
+Covers all public schools in the US.
+
+**Parameters:**
+- `year` **(required)** — School year (e.g. 2022)
+- `stateFips` — 2-digit state FIPS code (e.g. 6 for CA, 36 for NY)
+- `grade` — Grade level (-1=PK, 0=K, 1-12)
+- `limit` — Max results (default 50)
+- `offset` — Pagination offset (default 0)
+
+#### `urban_ed_districts`
+
+Query district-level enrollment data from the CCD.
+Covers all public school districts in the US.
+
+**Parameters:**
+- `year` **(required)** — School year (e.g. 2022)
+- `stateFips` — 2-digit state FIPS code (e.g. 6 for CA, 36 for NY)
+- `limit` — Max results (default 50)
+- `offset` — Pagination offset (default 0)
+
+#### `urban_ed_colleges`
+
+Query college/university enrollment data (FTE) from IPEDS.
+Covers all Title IV postsecondary institutions.
+
+**Parameters:**
+- `year` **(required)** — Academic year (e.g. 2022)
+- `stateFips` — 2-digit state FIPS code (e.g. 6 for CA, 36 for NY)
+- `limit` — Max results (default 50)
+- `offset` — Pagination offset (default 0)
 
 ---
 
@@ -3130,6 +3483,43 @@ Max 50,000 records. Use usda_ag_count first for large queries.
 
 ## Justice
 
+### CourtListener (Case Law)
+
+Search and retrieve federal and state court opinions from CourtListener's database of millions of case law documents. Includes full opinion text, court, date filed, and citation information.
+
+**Workflow:** courtlistener_search to find opinions by keyword, court, or date range → courtlistener_opinion to get the full opinion text by ID.
+
+**Tips:** Court codes: 'scotus' (Supreme Court), 'ca1'-'ca11' (Circuit Courts), 'cadc' (DC Circuit), 'cafc' (Federal Circuit). Dates use YYYY-MM-DD format. Search returns opinion metadata; use courtlistener_opinion for full text. Page size max 20.
+
+| Tool | Description | · Auth: `COURTLISTENER_API_KEY` |
+|------|-------------|---|
+| `courtlistener_search` | Search case law opinions across federal and state courts. |
+| `courtlistener_opinion` | Get the full text of a court opinion by its CourtListener ID. |
+
+#### `courtlistener_search`
+
+Search case law opinions across federal and state courts.
+Find opinions by keyword, court, or date range.
+Court codes: 'scotus' (Supreme Court), 'ca1'-'ca11' (Circuit Courts), 'cadc' (DC Circuit), 'cafc' (Federal Circuit).
+Returns opinion metadata including case name, court, date filed, and citation.
+
+**Parameters:**
+- `query` — Search keywords: 'first amendment', 'qualified immunity', 'antitrust'
+- `court` — Court code: 'scotus', 'ca1', 'ca9', 'cadc', 'cafc'
+- `filed_after` — Filed after date (YYYY-MM-DD)
+- `filed_before` — Filed before date (YYYY-MM-DD)
+- `limit` — Results per page (default 20, max 20)
+
+#### `courtlistener_opinion`
+
+Get the full text of a court opinion by its CourtListener ID.
+Returns the complete opinion text, case name, court, date filed, and citations.
+
+**Parameters:**
+- `id` **(required)** — CourtListener opinion ID (from search results)
+
+---
+
 ### DOJ News
 
 Department of Justice press releases (262K+) and blog entries (3,200+). Search by title keyword, date, and DOJ component. Covers enforcement actions, indictments, settlements, policy announcements across all DOJ divisions including FBI, DEA, ATF, USAO, and Civil Rights.
@@ -3411,6 +3801,40 @@ Optionally filter by recency (hours).
 
 **Parameters:**
 - `hours` — Hours of PIREPs to retrieve (default: recent)
+
+---
+
+### FMCSA (Federal Motor Carrier Safety Administration)
+
+Search and retrieve motor carrier safety data including carrier profiles, safety ratings, inspections, and crash data for trucking and bus companies registered with the DOT.
+
+**Workflow:** Use fmcsa_carrier_search to find carriers by name, DOT number, or state → fmcsa_carrier_detail to get the full safety profile for a specific carrier.
+
+**Tips:** Search by company name for partial matches. Use 2-letter state codes (e.g. 'TX', 'CA'). DOT numbers are numeric identifiers assigned to each carrier.
+
+| Tool | Description | · Auth: `FMCSA_API_KEY` |
+|------|-------------|---|
+| `fmcsa_carrier_search` | Search motor carriers registered with FMCSA by company name, DOT number, or state. |
+| `fmcsa_carrier_detail` | Get the full safety profile for a motor carrier by DOT number. |
+
+#### `fmcsa_carrier_search`
+
+Search motor carriers registered with FMCSA by company name, DOT number, or state.
+Returns carrier profiles including legal name, DBA, state, driver count, power units, and safety rating.
+Use to find trucking companies, bus companies, and other motor carriers.
+
+**Parameters:**
+- `name` — Carrier legal name or partial name (e.g. 'Swift', 'Werner')
+- `state` — 2-letter state code (e.g. 'TX', 'CA')
+- `dot_number` — DOT number for a specific carrier
+
+#### `fmcsa_carrier_detail`
+
+Get the full safety profile for a motor carrier by DOT number.
+Returns detailed information including safety rating, inspection results, crash data, driver counts, and operational details.
+
+**Parameters:**
+- `dot_number` **(required)** — DOT number of the carrier
 
 ---
 
@@ -4474,6 +4898,30 @@ Shows how full each sailing is and estimated wait times for drive-up customers.
 
 ## International
 
+### State Department Travel Advisories
+
+U.S. State Department travel advisories for all countries. Includes advisory levels (1-4), description, date published, and country information.
+
+**Workflow:** travel_advisories to get all travel advisories or filter by country.
+
+**Tips:** Advisory levels: 1 = Exercise Normal Precautions, 2 = Exercise Increased Caution, 3 = Reconsider Travel, 4 = Do Not Travel. Returns all advisories by default; filter by country_code (ISO 2-letter, e.g. 'AF', 'CN', 'RU').
+
+| Tool | Description | · No auth required |
+|------|-------------|---|
+| `travel_advisories` | Get U.S. State Department travel advisories for all countries or a specific country. |
+
+#### `travel_advisories`
+
+Get U.S. State Department travel advisories for all countries or a specific country.
+Advisory levels: 1 = Exercise Normal Precautions, 2 = Exercise Increased Caution, 3 = Reconsider Travel, 4 = Do Not Travel.
+Includes advisory text, date published, and country information.
+
+**Parameters:**
+- `country_code` — ISO 2-letter country code to filter: 'AF', 'CN', 'RU', 'MX', 'UA'
+- `level` — Filter by advisory level: 1, 2, 3, or 4
+
+---
+
 ### World Bank
 
 International economic indicators for 200+ countries: GDP, population, health spending, life expectancy, trade, inequality
@@ -5006,6 +5454,34 @@ Example: keyword='quantum computing', agency='DOD', limit=10
 ---
 
 ## Security
+
+### CISA KEV (Known Exploited Vulnerabilities)
+
+CISA Known Exploited Vulnerabilities catalog — mandatory remediation deadlines for actively exploited CVEs. Includes vendor, product, description, required action, due date, and ransomware campaign usage.
+
+**Workflow:** cisa_kev_list to get all known exploited vulnerabilities with filtering options.
+
+**Tips:** Returns the full catalog. Filter client-side by vendor, product, or date. Each vulnerability includes cveID, vendorProject, product, vulnerabilityName, dateAdded, shortDescription, requiredAction, dueDate, and knownRansomwareCampaignUse (Known/Unknown).
+
+| Tool | Description | · No auth required |
+|------|-------------|---|
+| `cisa_kev_list` | Get CISA Known Exploited Vulnerabilities with mandatory federal remediation deadlines. |
+
+#### `cisa_kev_list`
+
+Get CISA Known Exploited Vulnerabilities with mandatory federal remediation deadlines.
+Returns all actively exploited CVEs in the catalog.
+Each entry includes CVE ID, vendor, product, description, required action, due date, and ransomware usage.
+Optional filters narrow results by vendor, product, or date range.
+
+**Parameters:**
+- `vendor` — Filter by vendor/project name (case-insensitive partial match): 'Microsoft', 'Apache', 'Cisco'
+- `product` — Filter by product name (case-insensitive partial match): 'Windows', 'Chrome', 'Exchange'
+- `date_added_after` — Only vulnerabilities added after this date (YYYY-MM-DD)
+- `date_added_before` — Only vulnerabilities added before this date (YYYY-MM-DD)
+- `ransomware_only` — Only show vulnerabilities with known ransomware campaign use
+
+---
 
 ### NVD (National Vulnerability Database)
 
@@ -7307,6 +7783,39 @@ Returns agency names, short names, slugs (for filtering), and URLs. 470+ agencie
 
 ---
 
+### FOIA.gov (Freedom of Information Act)
+
+Federal FOIA data — agency contact information and annual FOIA report statistics. Lists all federal agencies with FOIA offices, request processing stats, and compliance data.
+
+**Workflow:** foia_agencies to list all federal agencies with FOIA contact info → foia_report to get annual FOIA processing statistics for a specific agency.
+
+**Tips:** Agency abbreviations are standard federal abbreviations (e.g. 'DOJ', 'DOD', 'DHS', 'EPA'). Annual reports include request volumes, processing times, backlog data, and exemption usage. Use foia_agencies first to discover available agency abbreviations.
+
+| Tool | Description | · No auth required |
+|------|-------------|---|
+| `foia_agencies` | List all federal agencies with FOIA offices and contact information. |
+| `foia_report` | Get annual FOIA report statistics for a specific federal agency. |
+
+#### `foia_agencies`
+
+List all federal agencies with FOIA offices and contact information.
+Returns agency names, abbreviations, FOIA request submission details, and websites.
+Use this to discover agency abbreviations for the foia_report tool.
+
+**Parameters:**
+- `search` — Filter agencies by name (case-insensitive partial match): 'defense', 'justice', 'energy'
+
+#### `foia_report`
+
+Get annual FOIA report statistics for a specific federal agency.
+Includes request volumes, processing times, backlog data, exemption usage, and compliance metrics.
+Use foia_agencies first to find the correct agency abbreviation.
+
+**Parameters:**
+- `agency_abbreviation` **(required)** — Federal agency abbreviation: 'DOJ', 'DOD', 'DHS', 'EPA', 'DOE'
+
+---
+
 ### GovInfo
 
 Full-text search across Congressional bills, laws, Federal Register, CFR, CBO reports, and more
@@ -7358,6 +7867,55 @@ Search for Congressional Budget Office reports published through GovInfo. CBO sc
 **Parameters:**
 - `query` **(required)** — Search query — bill name or topic (e.g., 'Tax Cuts and Jobs Act', 'reconciliation')
 - `page_size` — Results per page (default: 10)
+
+---
+
+### OpenStates (State Legislation)
+
+Search bills and legislators across all 50 state legislatures. Track state-level legislation, sponsors, and voting records via the OpenStates API.
+
+**Workflow:** openstates_bills to search bills by state and keyword → openstates_bill_detail for full bill info by OpenStates ID → openstates_legislators to find state legislators by name or jurisdiction.
+
+**Tips:** Jurisdiction uses state abbreviation lowercase (e.g. 'ca', 'tx', 'ny'). Session is the legislative session identifier (e.g. '2023-2024'). Page starts at 1. Per_page max is 50. Bill IDs are OpenStates UUIDs from search results.
+
+| Tool | Description | · Auth: `OPENSTATES_API_KEY` |
+|------|-------------|---|
+| `openstates_bills` | Search bills across all 50 state legislatures. |
+| `openstates_bill_detail` | Get full details for a specific state bill by its OpenStates ID. |
+| `openstates_legislators` | Search state legislators across all 50 states. |
+
+#### `openstates_bills`
+
+Search bills across all 50 state legislatures.
+Filter by state (jurisdiction), keyword query, and legislative session.
+Returns bill identifiers, titles, sessions, and sponsors.
+
+**Parameters:**
+- `jurisdiction` — State abbreviation lowercase: 'ca', 'tx', 'ny', 'fl'
+- `query` — Search term: 'climate', 'housing', 'education'
+- `session` — Legislative session: '2023-2024', '2023'
+- `page` — Page number (default 1)
+- `limit` — Results per page (default 20, max 50)
+
+#### `openstates_bill_detail`
+
+Get full details for a specific state bill by its OpenStates ID.
+Returns complete bill information including sponsors, actions, votes, and documents.
+
+**Parameters:**
+- `openstates_id` **(required)** — OpenStates bill ID (e.g. 'ocd-bill/abc123-def456') from search results
+
+#### `openstates_legislators`
+
+Search state legislators across all 50 states.
+Filter by state (jurisdiction) and name.
+Returns legislator names, parties, chambers, districts, and contact info.
+
+**Parameters:**
+- `jurisdiction` — State abbreviation lowercase: 'ca', 'tx', 'ny'
+- `name` — Legislator name to search: 'Smith', 'Garcia'
+- `page` — Page number (default 1)
+- `limit` — Results per page (default 20, max 50)
 
 ---
 
@@ -7450,6 +8008,29 @@ Get detailed information for a specific regulatory docket by its docket ID (e.g.
 
 **Parameters:**
 - `docketId` **(required)** — Docket ID (e.g. 'EPA-HQ-OAR-2003-0129')
+
+---
+
+### USCIS (U.S. Citizenship and Immigration Services)
+
+Check immigration case status by receipt number using the USCIS Case Status Online API. No API key required.
+
+**Workflow:** Use uscis_case_status with a receipt number (e.g. 'EAC2190000001') to check the current status of an immigration case.
+
+**Tips:** Receipt numbers are 13 characters: 3-letter center code + 10 digits (e.g. 'EAC2190000001', 'WAC2312345678'). Center codes: EAC (Vermont), WAC (California), LIN (Nebraska), SRC (Texas), IOE (online-filed).
+
+| Tool | Description | · No auth required |
+|------|-------------|---|
+| `uscis_case_status` | Check the status of a USCIS immigration case by receipt number. |
+
+#### `uscis_case_status`
+
+Check the status of a USCIS immigration case by receipt number.
+Returns the current case status, form type, and latest action taken.
+Receipt numbers are 13 characters: 3-letter center code + 10 digits (e.g. 'EAC2190000001').
+
+**Parameters:**
+- `receipt_number` **(required)** — USCIS receipt number (e.g. 'EAC2190000001')
 
 ---
 

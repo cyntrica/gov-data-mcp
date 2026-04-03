@@ -1,7 +1,7 @@
 {
   "name": "gov-data-mcp",
   "version": "2026.3.9",
-  "description": "MCP server + standalone TypeScript SDK for 50+ U.S. federal, state, and international data APIs. 330+ tools with WASM-sandboxed code mode for context reduction. Covers federal (Treasury, FRED, BLS, BEA, EIA, Census, FEC, Congress, Federal Register, USAspending, SEC, FBI, GovInfo, NOAA, USDA, World Bank, CDC, NAEP, College Scorecard, NREL, FDA, EPA, Senate Lobbying, Regulations.gov, FEMA, NHTSA, CMS, HUD, USPTO, CFPB, FDIC, DOL, USGS, ClinicalTrials.gov, BTS, Open Payments, NIH RePORTER, DOJ News, GSA CALC+) and state-level data (50-state Socrata + ArcGIS, MD CHART traffic, Chesapeake Bay CBIBS, MD MTA transit).",
+  "description": "MCP server + TypeScript SDK for 114 U.S. federal, state, and international data APIs. 562 tools covering economic, health, legislative, financial, energy, environment, education, transportation, safety, justice, trade, campaign finance, and more. All 50 states + DC. Includes 12 transit systems, 15-state real-time traffic, 3 energy grids, and WASM-sandboxed code mode.",
   "main": "dist/server.js",
   "bin": {
     "gov-data-mcp": "dist/server.js"

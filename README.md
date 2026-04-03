@@ -2,11 +2,11 @@
 
 # Gov Data MCP
 
-**MCP Server + TypeScript SDK for 97 Government Data APIs**
+**MCP Server + TypeScript SDK for 114 Government Data APIs**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-532 tools covering federal, state, and international government data — economic, fiscal, health, education, energy, environment, legislative, financial, transportation, transit, traffic, safety, procurement, science, and more. All 50 states + DC represented.
+562 tools covering federal, state, and international government data — economic, fiscal, health, education, energy, environment, legislative, financial, transportation, transit, traffic, safety, procurement, science, trade, case law, campaign finance, and more. All 50 states + DC represented.
 
 **40+ APIs require no key** · The rest use free keys that take under a minute to get · [Complete Tool Reference](TOOLS.md)
 
@@ -16,7 +16,7 @@
 
 ## Features
 
-- **532 tools** across 97 government data modules — federal agencies, state portals, transit systems, energy grids, and international sources
+- **562 tools** across 114 government data modules — federal agencies, state portals, transit systems, energy grids, and international sources
 - **All 50 states + DC** — generic Socrata + ArcGIS tools across 47 states, 15-state real-time 511 traffic, 12 transit systems, and state-specific APIs
 - **Cross-referencing** — built-in routing table guides the LLM to combine data from multiple agencies automatically
 - **Code mode** — WASM-sandboxed JavaScript execution reduces context window usage by 98–100% for large responses
@@ -124,7 +124,7 @@ const mdCrime = await queryStateDataset("MD", "jwfa-fdxs", { where: "year = '202
 
 No MCP server required. All functions include caching, retry, and rate limiting.
 
-## Data Sources (97 Modules, 532 Tools)
+## Data Sources (114 Modules, 562 Tools)
 
 > See [TOOLS.md](TOOLS.md) for complete tool reference with parameters and descriptions.
 
