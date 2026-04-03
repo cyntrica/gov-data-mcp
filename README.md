@@ -2,13 +2,13 @@
 
 # Gov Data MCP
 
-**MCP Server + TypeScript SDK for 96 Government Data APIs**
+**MCP Server + TypeScript SDK for 97 Government Data APIs**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-508 tools covering federal, state, and international government data — economic, fiscal, health, education, energy, environment, legislative, financial, transportation, transit, traffic, safety, procurement, science, and more.
+532 tools covering federal, state, and international government data — economic, fiscal, health, education, energy, environment, legislative, financial, transportation, transit, traffic, safety, procurement, science, and more. All 50 states + DC represented.
 
-**40+ APIs require no key** · The rest use free keys that take under a minute to get
+**40+ APIs require no key** · The rest use free keys that take under a minute to get · [Complete Tool Reference](TOOLS.md)
 
 </div>
 
@@ -16,8 +16,8 @@
 
 ## Features
 
-- **508 tools** across 96 government data modules — federal agencies, 30+ state portals, transit systems, energy grids, and international sources
-- **50-state coverage** — generic Socrata + ArcGIS tools work across 30 states, plus 14-state real-time 511 traffic, 10 transit systems, and state-specific APIs
+- **532 tools** across 97 government data modules — federal agencies, state portals, transit systems, energy grids, and international sources
+- **All 50 states + DC** — generic Socrata + ArcGIS tools across 47 states, 15-state real-time 511 traffic, 12 transit systems, and state-specific APIs
 - **Cross-referencing** — built-in routing table guides the LLM to combine data from multiple agencies automatically
 - **Code mode** — WASM-sandboxed JavaScript execution reduces context window usage by 98–100% for large responses
 - **Selective loading** — load only what you need: `--modules fred,treasury,state-data,mbta`
@@ -124,7 +124,9 @@ const mdCrime = await queryStateDataset("MD", "jwfa-fdxs", { where: "year = '202
 
 No MCP server required. All functions include caching, retry, and rate limiting.
 
-## Data Sources (96 Modules, 508 Tools)
+## Data Sources (97 Modules, 532 Tools)
+
+> See [TOOLS.md](TOOLS.md) for complete tool reference with parameters and descriptions.
 
 ### Federal — Economic (12 modules)
 | Module | Tools | Auth | Data |
@@ -228,15 +230,15 @@ No MCP server required. All functions include caching, retry, and rate limiting.
 ### State & Local — Open Data (1 module, 30 states)
 | Module | Tools | Coverage |
 |--------|-------|----------|
-| `state-data` | 15 | 30 states via Socrata SODA API + ArcGIS REST. Crime, health, education, economy, property, environment, transportation. MD fully populated (21 datasets), NY (13), CT (12), WA (8), TX (7), PA (7), NJ (4), + 23 more with GIS and/or Socrata portals. |
+| `state-data` | 15 | All 50 states + DC via Socrata SODA API + ArcGIS REST. Crime, health, education, economy, property, environment, transportation. MD fully populated (21 datasets), NY (13), CT (12), WA (8), TX (7), PA (7), NJ (4), + 40 more with GIS and/or Socrata portals. |
 
 ### State & Local — Real-Time Traffic (2 modules, 15+ states)
 | Module | Tools | Coverage |
 |--------|-------|----------|
-| `state-511` | 6 | 14 states: AZ, NV, UT, AK, ID, NY, CT, GA, WI, LA, OH, NC, WA. Incidents, cameras, signs, weather, conditions. |
+| `state-511` | 6 | 15 states: AZ, NV, UT, AK, ID, NY, CT, GA, WI, LA, AR, OH, NC, WA. Incidents, cameras, signs, weather, conditions. |
 | `md-traffic` | 7 | Maryland CHART: incidents, closures, cameras, speeds, weather, DMS, travel times |
 
-### State & Local — Transit (11 modules)
+### State & Local — Transit (12 modules)
 | Module | Tools | Auth | City/Region |
 |--------|-------|------|-------------|
 | `mbta` | 4 | Key | Boston (subway, bus, commuter rail, ferry) |
@@ -249,6 +251,7 @@ No MCP server required. All functions include caching, retry, and rate limiting.
 | `wsdot-ferries` | 3 | Key | Washington State Ferries (schedules, vessels, terminals) |
 | `marta` | 1 | Key | Atlanta (rail) |
 | `path-train` | 1 | — | NYC/NJ PATH train |
+| `wmata` | 4 | Key | Washington DC Metro & Bus |
 | `md-transit` | 3 | Key | Maryland MTA (bus, light rail, metro, MARC) |
 
 ### State & Local — Energy Grids (3 modules)
