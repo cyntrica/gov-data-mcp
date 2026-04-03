@@ -14,7 +14,7 @@ export default {
     "loc_search for global keyword search → loc_item_detail for full metadata on a specific item → loc_collections to browse collections → loc_browse_format to explore by media type → loc_newspaper_search for historical newspaper full-text search.",
   tips:
     "Use facets to narrow searches (e.g. by date, subject, location). Collection slugs can be found via loc_collections. Chronicling America covers newspapers from 1777–1963. Format options: audio, books, film-and-videos, maps, photos, newspapers, manuscripts, notated-music, web-archives.",
-  domains: [],
+  domains: ["education"],
   reference: {
     docs: {
       "LOC API": "https://www.loc.gov/apis/",

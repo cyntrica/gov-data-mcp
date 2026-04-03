@@ -14,7 +14,7 @@ export default {
     "opm_current_status for today's federal operating status -> opm_status_history for historical records -> opm_status_types for reference list of all status categories.",
   tips:
     "Current status returns the latest DC-area federal operating status. History supports pagination with startrow and count (max 5000). Date format for current status query is MM/DD/YYYY. Status types include Open, Closed, various Delayed/Early Departure options.",
-  domains: [],
+  domains: ["economy"],
   crossRef: [],
   reference: {
     docs: {

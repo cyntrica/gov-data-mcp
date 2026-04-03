@@ -26,7 +26,7 @@ export default {
     "device, device-model, os, browser, os-browser, windows, windows-browser, language. " +
     "Use after/before params (YYYY-MM-DD) to filter by date range. " +
     "Maximum 10000 results per request. Use page for pagination.",
-  domains: [] as Domain[],
+  domains: ["economy"] as Domain[],
   reference: {
     docs: {
       "DAP API": "https://open.gsa.gov/api/dap/",

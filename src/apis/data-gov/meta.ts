@@ -23,5 +23,5 @@ export default {
     "facet.field can be 'organization', 'tags', 'res_format', 'groups' for aggregations. " +
     "Sort options: 'relevance asc', 'metadata_modified desc', 'name asc'. " +
     "The id param in dataset_detail accepts either the dataset name (slug) or UUID.",
-  domains: [],
+  domains: ["economy"],
 } satisfies ModuleMeta;
