@@ -45,7 +45,7 @@ export default withMermaid(defineConfig({
           },
           {
             text: "GitHub",
-            link: "https://github.com/lzinga/us-gov-open-data-mcp",
+            link: "https://github.com/cyntrica/gov-data-mcp",
           },
         ],
       },
@@ -122,7 +122,7 @@ export default withMermaid(defineConfig({
     socialLinks: [
       {
         icon: "github",
-        link: "https://github.com/lzinga/us-gov-open-data-mcp",
+        link: "https://github.com/cyntrica/gov-data-mcp",
       },
       {
         icon: "npm",
@@ -136,7 +136,7 @@ export default withMermaid(defineConfig({
 
     editLink: {
       pattern:
-        "https://github.com/lzinga/us-gov-open-data-mcp/edit/main/docs/:path",
+        "https://github.com/cyntrica/gov-data-mcp/edit/main/docs/:path",
     },
 
     footer: {

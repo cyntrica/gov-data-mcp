@@ -1,10 +1,10 @@
 {
-  "name": "us-gov-open-data-mcp",
+  "name": "gov-data-mcp",
   "version": "2026.3.9",
-  "description": "MCP server + standalone TypeScript SDK for 40+ U.S. government and international data APIs. 300+ tools with WASM-sandboxed code mode for context reduction. Covers Treasury, FRED, BLS, BEA, EIA, Census, FEC, Congress, Federal Register, USAspending, SEC, FBI, GovInfo, NOAA, USDA, World Bank, CDC, NAEP, College Scorecard, NREL, FDA (25 endpoints), EPA, EPA-AQS, Senate Lobbying, Regulations.gov, USDA FoodData, FEMA, NHTSA, CMS, HUD, USPTO, CFPB, FDIC, DOL, USGS, ClinicalTrials.gov, BTS, Open Payments, NIH RePORTER, DOJ News, GSA CALC+.",
+  "description": "MCP server + standalone TypeScript SDK for 50+ U.S. federal, state, and international data APIs. 330+ tools with WASM-sandboxed code mode for context reduction. Covers federal (Treasury, FRED, BLS, BEA, EIA, Census, FEC, Congress, Federal Register, USAspending, SEC, FBI, GovInfo, NOAA, USDA, World Bank, CDC, NAEP, College Scorecard, NREL, FDA, EPA, Senate Lobbying, Regulations.gov, FEMA, NHTSA, CMS, HUD, USPTO, CFPB, FDIC, DOL, USGS, ClinicalTrials.gov, BTS, Open Payments, NIH RePORTER, DOJ News, GSA CALC+) and state-level data (50-state Socrata + ArcGIS, MD CHART traffic, Chesapeake Bay CBIBS, MD MTA transit).",
   "main": "dist/server.js",
   "bin": {
-    "us-gov-open-data-mcp": "dist/server.js"
+    "gov-data-mcp": "dist/server.js"
   },
   "exports": {
     ".": "./dist/server.js",
@@ -86,20 +86,23 @@
     "transportation",
     "government",
     "open-data",
+    "state-data",
+    "socrata",
+    "arcgis",
     "api",
     "sdk",
     "typescript"
   ],
-  "author": "lzinga",
+  "author": "Cyntrica",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lzinga/us-gov-open-data-mcp.git"
+    "url": "git+https://github.com/cyntrica/gov-data-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/lzinga/us-gov-open-data-mcp/issues"
+    "url": "https://github.com/cyntrica/gov-data-mcp/issues"
   },
-  "homepage": "https://github.com/lzinga/us-gov-open-data-mcp#readme",
+  "homepage": "https://github.com/cyntrica/gov-data-mcp#readme",
   "engines": {
     "node": ">=18.0.0"
   },
