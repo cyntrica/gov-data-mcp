@@ -506,6 +506,154 @@ export const STATE_REGISTRY: Record<string, StateConfig> = {
     code: "NV",
     socrata: { domain: "data.nv.gov", datasets: {} },
   },
+
+  // ══════════════════════════════════════════════════════════════════
+  // TIER 5 — GIS only (no Socrata portal found)
+  // ══════════════════════════════════════════════════════════════════
+
+  DC: {
+    name: "District of Columbia",
+    code: "DC",
+    gis: {
+      baseUrl: "https://maps2.dcgis.dc.gov/dcgis/rest/services",
+      services: {},
+    },
+  },
+  DE: {
+    name: "Delaware",
+    code: "DE",
+    socrata: { domain: "data.delaware.gov", datasets: {} },
+    gis: {
+      baseUrl: "https://enterprise.firstmap.delaware.gov/arcgis/rest/services",
+      services: {
+        boundaries: "Boundaries/DE_Boundaries/MapServer",
+        parcels: "PlanningCadastre/DE_Parcels/MapServer",
+      },
+    },
+  },
+  VT: {
+    name: "Vermont",
+    code: "VT",
+    socrata: { domain: "data.vermont.gov", datasets: {} },
+    gis: {
+      baseUrl: "https://anrmaps.vermont.gov/arcgis/rest/services",
+      services: {},
+    },
+  },
+  TN: {
+    name: "Tennessee",
+    code: "TN",
+    gis: {
+      baseUrl: "https://tnmap.tn.gov/arcgis/rest/services",
+      services: {
+        boundaries: "ADMINISTRATIVE_BOUNDARIES/AdminBoundaries/MapServer",
+      },
+    },
+  },
+  AR: {
+    name: "Arkansas",
+    code: "AR",
+    gis: {
+      baseUrl: "https://gis.arkansas.gov/arcgis/rest/services",
+      services: {},
+    },
+  },
+  KS: {
+    name: "Kansas",
+    code: "KS",
+    gis: {
+      baseUrl: "https://services.kansasgis.org/arcgis/rest/services",
+      services: {},
+    },
+  },
+  ME: {
+    name: "Maine",
+    code: "ME",
+    gis: {
+      baseUrl: "https://gis.maine.gov/mapservices/rest/services",
+      services: {},
+    },
+  },
+  MS: {
+    name: "Mississippi",
+    code: "MS",
+    gis: {
+      baseUrl: "https://www.gis.ms.gov/arcgis/rest/services",
+      services: {},
+    },
+  },
+  MT: {
+    name: "Montana",
+    code: "MT",
+    gis: {
+      baseUrl: "https://gisservicemt.gov/arcgis/rest/services",
+      services: {},
+    },
+  },
+  ND: {
+    name: "North Dakota",
+    code: "ND",
+    gis: {
+      baseUrl: "https://ndgishub.nd.gov/arcgis/rest/services",
+      services: {},
+    },
+  },
+  NE: {
+    name: "Nebraska",
+    code: "NE",
+    gis: {
+      baseUrl: "https://giscat.ne.gov/enterprise/rest/services",
+      services: {},
+    },
+  },
+  NH: {
+    name: "New Hampshire",
+    code: "NH",
+    gis: {
+      baseUrl: "https://maps.dot.nh.gov/arcgis_server/rest/services",
+      services: {},
+    },
+  },
+  NM: {
+    name: "New Mexico",
+    code: "NM",
+    gis: {
+      baseUrl: "https://data-nmenv.opendata.arcgis.com",
+      services: {},
+    },
+  },
+  RI: {
+    name: "Rhode Island",
+    code: "RI",
+    gis: {
+      baseUrl: "https://gis.ri.gov/arcgis/rest/services",
+      services: {},
+    },
+  },
+  SD: {
+    name: "South Dakota",
+    code: "SD",
+    gis: {
+      baseUrl: "https://arcgis.sd.gov/arcgis/rest/services",
+      services: {},
+    },
+  },
+  WV: {
+    name: "West Virginia",
+    code: "WV",
+    gis: {
+      baseUrl: "https://gis.transportation.wv.gov/arcgis/rest/services",
+      services: {},
+    },
+  },
+  WY: {
+    name: "Wyoming",
+    code: "WY",
+    gis: {
+      baseUrl: "https://services.wygisc.org/HostGIS/rest/services",
+      services: {},
+    },
+  },
 };
 
 // ─── Lookup Helpers ─────────────────────────────────────────────────

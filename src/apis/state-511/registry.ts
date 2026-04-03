@@ -93,6 +93,12 @@ export const TRAFFIC_REGISTRY: Record<string, Traffic511Config> = {
     authEnvVar: "LA511_API_KEY", authType: "query", authParamName: "key",
     docs: "https://www.511la.org/developers/doc",
   },
+  AR: {
+    name: "Arkansas", code: "AR", platform: "ibi511",
+    baseUrl: "https://traveliq.ibi511.com/api/v2/get",
+    authEnvVar: "AR511_API_KEY", authType: "query", authParamName: "key",
+    docs: "https://traveliq.ibi511.com/developers/doc",
+  },
 
   // ── Unique platform states ───────────────────────────────────────
   OH: {
